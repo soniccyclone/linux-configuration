@@ -1,0 +1,22 @@
+[user]
+	name = Nathan Barlow
+	email = nathanjbarlow@gmail.com
+[alias]
+	a = add -A :/
+        co = checkout
+        cp = cherry-pick
+        cob = checkout -b
+        cim = commit --allow-empty -m
+        st = status
+        pushup = !git push --set-upstream origin `git rev-parse --abbrev-ref HEAD`
+        br = branch
+        hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+        type = cat-file -t
+        dump = cat-file -p
+        rebi = rebase -i
+        del = branch -D
+	clean-house = !git fetch -p && git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D
+[branch]
+        autosetuprebase = always
+[core]
+        editor = nvim
