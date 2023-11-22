@@ -4,5 +4,8 @@ This repository contains the dotfiles used in my linux development environments 
 
 ## Usage
 
-Run: `./setup.sh`.
+Run: 
+```bash
+    setup.sh
+```
 
