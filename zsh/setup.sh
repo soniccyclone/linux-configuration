@@ -13,7 +13,7 @@ if sudo -v; then
 fi
 
 zsh --version
-mkdir -p ~/.local/bin
+mkdir -p ${HOME}/.local/bin
 
 # Install zprezto
 ZPREZTO_DIR="${ZDOTDIR:-$HOME}/.zprezto"
@@ -53,7 +53,7 @@ done
 export BIN_DIR="${HOME}/.local/bin"
 curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
 
-mkdir -p ~/.config
-rm -f ~/.config/starship.toml
-ln -s -f "$(pwd)/starship.toml" ~/.config/starship.toml
+mkdir -p ${HOME}/.config
+rm -f ${HOME}/.config/starship.toml
+ln -s -f "$(pwd)/starship.toml" ${HOME}/.config/starship.toml
 
