@@ -6,8 +6,7 @@ cd $(dirname ${BASH_SOURCE[0]})
 
 echo "Installing git."
 if sudo -v; then
-	sudo apt-get update
-	sudo apt-get install \
+	sudo apt-get -qy install \
 		git
 fi
 
