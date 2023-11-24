@@ -6,5 +6,6 @@
     "explorer.confirmDelete": false,
     "git.autofetch": true,
     "redhat.telemetry.enabled": false,
-    "git.enableSmartCommit": true
+    "git.enableSmartCommit": true,
+    "FSharp.suggestGitignore": false
 }
