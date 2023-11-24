@@ -1,0 +1,9 @@
+{
+    "workbench.colorTheme": "windows-xp",
+    "editor.minimap.enabled": false,
+    "git.confirmSync": false,
+    "diffEditor.renderSideBySide": false,
+    "explorer.confirmDelete": false,
+    "git.autofetch": true,
+    "redhat.telemetry.enabled": false
+}
