@@ -25,6 +25,7 @@ EXTENSIONS=(
     "ms-dotnettools.csdevkit"
     "ionide.ionide-fsharp"
     "sinedied.vscode-windows-xp-theme"
+    "ms-vscode.makefile-tools"
 )
 
 for extension in ${EXTENSIONS[@]}; do
