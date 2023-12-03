@@ -26,6 +26,7 @@ EXTENSIONS=(
     "ionide.ionide-fsharp"
     "sinedied.vscode-windows-xp-theme"
     "ms-vscode.makefile-tools"
+    "ms-vscode.cpptools-extension-pack"
 )
 
 for extension in ${EXTENSIONS[@]}; do
