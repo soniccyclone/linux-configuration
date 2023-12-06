@@ -6,7 +6,7 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # PATH
-export PATH="${HOME}/.local/bin:${PATH}"
+export PATH="${HOME}/.local/bin:${HOME}/.dotnet/tools:${PATH}"
 
 # Emacs
 export LSP_USE_PLISTS=true
@@ -14,9 +14,7 @@ export LSP_USE_PLISTS=true
 # Aliases
 alias dwr="dotnet watch run"
 alias dwt="dotnet watch test"
-alias EDITOR="nvim"
-alias vi="nvim"
-alias vim="nvim"
+alias EDITOR="vim"
 alias sbcl="rlwrap -c sbcl"
 alias bat="batcat"
 alias cat="batcat"
