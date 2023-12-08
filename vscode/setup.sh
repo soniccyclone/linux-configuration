@@ -27,7 +27,7 @@ EXTENSIONS=(
     "sinedied.vscode-windows-xp-theme"
     "ms-vscode.makefile-tools"
     "ms-vscode.cpptools-extension-pack"
-    "humao.rest-client"
+    "rangav.vscode-thunder-client"
 )
 
 for extension in ${EXTENSIONS[@]}; do
