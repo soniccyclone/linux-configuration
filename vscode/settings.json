@@ -7,5 +7,6 @@
     "git.autofetch": true,
     "redhat.telemetry.enabled": false,
     "git.enableSmartCommit": true,
-    "FSharp.suggestGitignore": false
+    "FSharp.suggestGitignore": false,
+    "terminal.integrated.fontFamily": "'FiraCode Nerd Font Mono', monospace"
 }
