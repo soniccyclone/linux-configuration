@@ -28,6 +28,7 @@ EXTENSIONS=(
     "ms-vscode.makefile-tools"
     "ms-vscode.cpptools-extension-pack"
     "rangav.vscode-thunder-client"
+    "alexcvzz.vscode-sqlite"
 )
 
 for extension in ${EXTENSIONS[@]}; do
