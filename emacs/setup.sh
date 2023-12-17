@@ -3,7 +3,6 @@
 set -eo pipefail
 
 EMACS_VERSION=29.1
-INSTALL_DIR=${HOME}/.local
 
 cd $(dirname ${BASH_SOURCE[0]})
 
@@ -45,11 +44,10 @@ export CFLAGS='-O3 -march=native -pipe'
 cd ./emacs-${EMACS_VERSION}
 ./autogen.sh
 ./configure \
-    --prefix=${INSTALL_DIR} \
     --without-compress-install \
     --with-json \
     --with-native-compilation=aot \
     --with-tree-sitter
 
 make -j 16
-make install
+sudo make install
