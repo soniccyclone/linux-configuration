@@ -19,6 +19,6 @@
 [branch]
         autosetuprebase = always
 [core]
-        editor = nvim
+        editor = emacs
 [pull]
 	rebase = true
