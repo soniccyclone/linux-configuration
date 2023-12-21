@@ -13,4 +13,3 @@ fi
 echo "Linking .gitconfig."
 
 ln -s -f $(pwd)/.gitconfig ~/.gitconfig
-
