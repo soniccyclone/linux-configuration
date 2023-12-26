@@ -1,3 +1,11 @@
+;;; emacs.el --- Configuration for my emacs
+
+;;; Commentary:
+;;; This package provides my customized Emacs configuration.
+;;; It is meant to be a lighter Emacs configuration as I enjoy most of the defaults.
+
+;;; Code:
+
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("melpa-stable" . "https://stable.melpa.org/packages/")
@@ -5,19 +13,6 @@
 (package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))
-
-(defun install-package (package)
-  (if (package-installed-p package)
-      nil
-    (package-install package)))
-
-(install-package 'auto-compile)
-(setq load-prefer-newer t) ;; prevent outdated byte code files from being loaded with auto-compile
-(auto-compile-on-load-mode)
-(auto-compile-on-save-mode)
-
-(install-package 'company)
-(add-hook 'after-init-hook 'global-company-mode)
 
 ;; Emacs can automatically create backup files. This tells Emacs to
 ;; put all backups in ~/.emacs.d/backups. More info:
@@ -99,10 +94,12 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(flycheck flx-ido ido-completing-read+ ido-vertical-mode auto-compile company)))
+   '(flycheck company flx-ido ido-completing-read+ ido-vertical-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+;;; init.el ends here
