@@ -93,8 +93,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(byte-compile-warnings '(not obsolete))
+ '(native-comp-async-report-warnings-errors 'silent)
  '(package-selected-packages
-   '(flycheck company flx-ido ido-completing-read+ ido-vertical-mode)))
+   '(flycheck company flx-ido ido-completing-read+ ido-vertical-mode))
+ '(warning-supress-log-types '((comp) (bytecomp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -102,4 +105,4 @@
  ;; If there is more than one, they won't work right.
  )
 
-;;; init.el ends here
+;;; emacs.el ends here

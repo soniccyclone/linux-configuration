@@ -41,12 +41,4 @@ echo "Installing emacs."
 sudo make install
 
 echo "Setting up emacs configuration."
-CONFIG_DIR=~/.emacs.d
-mkdir -p ${CONFIG_DIR}
-
-pushd ${CONFIG_DIR}
-for file in ${CWD}/emacs.d/early-init.el \
-	    ${CWD}/emacs.d/init.el; do
-    ln -s -f ${file}
-done
-popd
+ln -s -f ${CWD}/emacs.el ${HOME}/.emacs
