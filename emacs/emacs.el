@@ -21,10 +21,21 @@
                                                "backups"))))
 (setq auto-save-default nil)
 
+;; Change all yes/no questions to y/n type
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; Enable moving around windows instead of only cycling through them
 (global-set-key (kbd "<C-M-up>")    'windmove-up)
 (global-set-key (kbd "<C-M-down>")  'windmove-down)
 (global-set-key (kbd "<C-M-left>")  'windmove-left)
 (global-set-key (kbd "<C-M-right>") 'windmove-right)
+
+;; Setup line numbers
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+;; Setup 80 column marker
+(add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+(setq display-fill-column-indicator-column 80)
 
 ;; Setting up the package manager. Install if missing.
 (unless (package-installed-p 'use-package)
