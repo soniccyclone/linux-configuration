@@ -70,9 +70,11 @@
   (ido-vertical-mode +1)
   (setq ido-vertical-define-keys 'C-n-C-p-up-and-down))
 
-(use-package ido-completing-read+ :config (ido-ubiquitous-mode +1))
+(use-package ido-completing-read+
+  :config (ido-ubiquitous-mode +1))
 
-(use-package flx-ido :config (flx-ido-mode +1))
+(use-package flx-ido
+  :config (flx-ido-mode +1))
 
 (use-package company
   :diminish company-mode
@@ -87,7 +89,12 @@
   (define-key company-active-map (kbd "C-n") 'company-select-next)
   (define-key company-active-map (kbd "C-p") 'company-select-previous))
 
-(use-package flycheck :config (global-flycheck-mode +1))
+(use-package flycheck
+  :config (global-flycheck-mode +1))
+
+(use-package eglot
+  :ensure nil)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
