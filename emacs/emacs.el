@@ -33,9 +33,8 @@
 ;; Setup line numbers
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
-;; Setup 80 column marker
+;; Turn on 80 column marker
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
-(setq display-fill-column-indicator-column 80)
 
 ;; Setting up the package manager. Install if missing.
 (unless (package-installed-p 'use-package)
@@ -112,6 +111,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(byte-compile-warnings '(not obsolete))
+ '(display-fill-column-indicator-column 80)
  '(native-comp-async-report-warnings-errors 'silent)
  '(package-selected-packages
    '(flycheck company flx-ido ido-completing-read+ ido-vertical-mode))
