@@ -6,7 +6,7 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # PATH
-export PATH="${HOME}/.local/bin:${HOME}/.dotnet/tools:${HOME}/bin:${PATH}"
+export PATH="${HOME}/.local/bin:${HOME}/.dotnet/tools:${HOME}/bin:/usr/local/go/bin:${PATH}"
 
 # Emacs
 export LSP_USE_PLISTS=true
