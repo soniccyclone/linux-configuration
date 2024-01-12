@@ -21,7 +21,6 @@
                                                "backups"))))
 (setq auto-save-default nil)
 
-(load-theme 'leuven-dark)
 (add-to-list 'default-frame-alist '(width . 85))
 
 ;; Change all yes/no questions to y/n type
