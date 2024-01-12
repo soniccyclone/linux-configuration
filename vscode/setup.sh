@@ -29,6 +29,7 @@ EXTENSIONS=(
     "ms-vscode.cpptools-extension-pack"
     "rangav.vscode-thunder-client"
     "alexcvzz.vscode-sqlite"
+    "golang.go"
 )
 
 for extension in ${EXTENSIONS[@]}; do
