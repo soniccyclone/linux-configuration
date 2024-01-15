@@ -35,7 +35,7 @@ cd ./emacs-${EMACS_VERSION}
     --with-native-compilation=aot \
     --with-tree-sitter
 
-make -j 16
+make -j 6
 
 echo "Installing emacs."
 sudo make install
