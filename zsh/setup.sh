@@ -57,3 +57,7 @@ mkdir -p ${HOME}/.config
 rm -f ${HOME}/.config/starship.toml
 ln -s -f "$(pwd)/starship.toml" ${HOME}/.config/starship.toml
 
+# run:
+# chsh -s $(which zsh)
+# as local user to change your shell to zsh
+
