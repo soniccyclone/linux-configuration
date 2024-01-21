@@ -9,6 +9,7 @@ echo "Setting up Common Lisp"
 # Install SBCL
 if sudo -v; then
     sudo apt-get -qy install \
+	 rlwrap \
 	 sbcl
 fi
 
