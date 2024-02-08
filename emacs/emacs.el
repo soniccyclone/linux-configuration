@@ -38,6 +38,9 @@
 ;; Turn on 80 column marker
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
+;; Highlight cursor line
+(global-hl-line-mode)
+
 ;; Setting up the package manager. Install if missing.
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
