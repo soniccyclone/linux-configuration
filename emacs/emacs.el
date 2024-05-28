@@ -112,9 +112,6 @@
 (use-package eglot
   :ensure nil)
 
-;; Setup common lisp
-(load (expand-file-name "~/.quicklisp/slime-helper.el"))
-(setq inferior-lisp-program "sbcl")
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
