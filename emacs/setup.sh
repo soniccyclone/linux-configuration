@@ -12,7 +12,7 @@ if sudo -v; then
     sudo apt-get update -qy
     sudo apt-get -qy install \
         build-essential autoconf gcc-11 libgccjit0 libgccjit-11-dev \
-        libgtk-3-dev libwebkit2gtk-4.0-dev libjansson4 libjansson-dev \
+        libgtk-3-dev libjansson4 libjansson-dev \
         apt-transport-https ca-certificates curl gnupg-agent \
         software-properties-common libxpm-dev libgif-dev \
 	libtree-sitter-dev libgnutls28-dev make wget pkg-config \
@@ -35,7 +35,7 @@ cd ./emacs-${EMACS_VERSION}
     --with-native-compilation=aot \
     --with-tree-sitter
 
-make -j 2
+make -j 7
 
 echo "Installing emacs."
 sudo make install
