@@ -5,6 +5,6 @@ set -euo pipefail
 cd $(dirname ${BASH_SOURCE[0]})
 
 if sudo -v; then
-	sudo apt-get -qy install \
-		openjdk-21-jdk
+    sudo dnf -qy install \
+	 java-21-openjdk-devel.x86_64
 fi

@@ -6,10 +6,7 @@ cd $(dirname ${BASH_SOURCE[0]})
 
 # Install zsh
 if sudo -v; then
-	sudo dpkg-reconfigure -f noninteractive tzdata
-	sudo apt-get -qy install \
-		curl \
-		zsh
+    sudo dnf -qy install zsh
 fi
 
 zsh --version
