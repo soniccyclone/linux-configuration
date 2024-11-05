@@ -1,6 +1,8 @@
 [user]
 	name = Nathan Barlow
 	email = nathanjbarlow@gmail.com
+[includeIf "gitdir:~/code-stuff/work/"]
+	path = ~/code-stuff/work/.gitconfig
 [alias]
 	a = add -A :/
         co = checkout
