@@ -25,3 +25,5 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 # Starship
 eval "$(starship init zsh)"
 
+# Prevent tab completion on WSL from taking an eternity
+unsetopt PATH_DIRS
