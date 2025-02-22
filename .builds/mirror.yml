@@ -1,0 +1,27 @@
+image: alpine/latest
+sources:
+  - git@git.sr.ht:~nathanb/linux-development-environment
+environment:
+  REPO: linux-development-environment
+  TARGET: git@github.com:soniccyclone/linux-configuration.git
+# https://builds.sr.ht/secrets
+secrets:
+  # NOTE: github-ssh-key:
+  - 465bb569-4d2f-409c-a4a1-38a8f21814f0
+tasks:
+  - ssh-config: |-
+      touch ~/.ssh/config
+      cat <<EOF >> ~/.ssh/config
+      Host github.com
+        User git
+        IdentityFile ~/.ssh/id_rsa
+      EOF
+  - ssh-keyscan: |-
+      touch ~/.ssh/known_hosts
+      ssh-keyscan github.com >> ~/.ssh/known_hosts
+  - add-remote: |-
+      cd ${REPO}
+      git remote add target ${TARGET}
+  - mirror: |-
+      cd ${REPO}
+      git push --force target --tags "refs/remotes/origin/*:refs/heads/*"
