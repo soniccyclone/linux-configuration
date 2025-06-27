@@ -110,6 +110,18 @@
 (use-package eglot
   :ensure nil)
 
+(use-package geiser)
+(use-package geiser-mit)
+(use-package paredit)
+(use-package macrostep)
+
+(use-package macrostep-geiser
+  :after geiser-mode
+  :config (add-hook 'geiser-mode-hook #'macrostep-geiser-setup))
+
+(use-package macrostep-geiser
+  :after geiser-repl
+  :config (add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
