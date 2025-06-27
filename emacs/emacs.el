@@ -107,8 +107,6 @@
 (use-package flycheck
   :config (global-flycheck-mode +1))
 
-(use-package go-mode)
-
 (use-package eglot
   :ensure nil)
 
