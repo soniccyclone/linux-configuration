@@ -6,7 +6,7 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # PATH
-export PATH="${HOME}/.local/bin:${HOME}/.dotnet/tools:${HOME}/bin:/usr/local/go/bin:${PATH}"
+export PATH="${HOME}/.local/bin:${HOME}/.dotnet/tools:${HOME}/bin:/usr/local/go/bin:${HOME}/go/bin:${PATH}"
 
 # Emacs
 export LSP_USE_PLISTS=true
@@ -25,5 +25,5 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 # Starship
 eval "$(starship init zsh)"
 
-# Prevent tab completion on WSL from taking an eternity
-unsetopt PATH_DIRS
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"

@@ -112,6 +112,18 @@
 (use-package eglot
   :ensure nil)
 
+(use-package geiser)
+(use-package geiser-mit)
+(use-package paredit)
+(use-package macrostep)
+
+(use-package macrostep-geiser
+  :after geiser-mode
+  :config (add-hook 'geiser-mode-hook #'macrostep-geiser-setup))
+
+(use-package macrostep-geiser
+  :after geiser-repl
+  :config (add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -122,7 +134,7 @@
  '(display-fill-column-indicator-column 80)
  '(native-comp-async-report-warnings-errors 'silent)
  '(package-selected-packages
-   '(flycheck company flx-ido ido-completing-read+ ido-vertical-mode))
+   '(slime flycheck company flx-ido ido-completing-read+ ido-vertical-mode))
  '(warning-supress-log-types '((comp) (bytecomp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
