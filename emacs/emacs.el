@@ -125,6 +125,9 @@
   :after geiser-repl
   :config (add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 
+(use-package slime
+  :after (slime-setup '(slime-fancy slime-quicklisp slime-asdf)))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -134,7 +137,7 @@
  '(display-fill-column-indicator-column 80)
  '(native-comp-async-report-warnings-errors 'silent)
  '(package-selected-packages
-   '(slime flycheck company flx-ido ido-completing-read+ ido-vertical-mode))
+   '(flycheck company flx-ido ido-completing-read+ ido-vertical-mode))
  '(warning-supress-log-types '((comp) (bytecomp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
