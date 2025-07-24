@@ -6,7 +6,7 @@ cd $(dirname ${BASH_SOURCE[0]})
 
 echo "Installing git."
 if sudo -v; then
-	sudo dnf -qy install \
+	sudo apt-get install -y \
 		git
 fi
 

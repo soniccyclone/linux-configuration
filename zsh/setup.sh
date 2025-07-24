@@ -6,7 +6,7 @@ cd $(dirname ${BASH_SOURCE[0]})
 
 # Install zsh
 if sudo -v; then
-    sudo dnf -qy install zsh
+    sudo apt-get install -y zsh
 fi
 
 zsh --version

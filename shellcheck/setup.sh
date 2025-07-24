@@ -6,6 +6,6 @@ cd $(dirname ${BASH_SOURCE[0]})
 
 echo "Installing shellcheck."
 if sudo -v; then
-	sudo dnf -qy install \
+	sudo apt-get install -y \
 		shellcheck
 fi
