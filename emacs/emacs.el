@@ -128,6 +128,13 @@
 (use-package slime
   :after (slime-setup '(slime-fancy slime-quicklisp slime-asdf)))
 
+(use-package acme-theme
+  :ensure t
+  :config
+  (load-theme 'acme t))
+;; Some other themes I liked: bubbleberry-theme forest-blue-theme
+;; autumn-light-theme afternoon-theme
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
