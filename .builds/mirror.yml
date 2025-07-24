@@ -7,7 +7,7 @@ environment:
 # https://builds.sr.ht/secrets
 secrets:
   # NOTE: github-ssh-key:
-  - 465bb569-4d2f-409c-a4a1-38a8f21814f0
+  - 914a19c2-8737-4037-ba6a-e93cdbc05628
 tasks:
   - ssh-config: |-
       touch ~/.ssh/config
