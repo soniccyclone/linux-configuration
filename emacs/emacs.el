@@ -109,9 +109,6 @@
 
 (use-package go-mode)
 
-(use-package eglot
-  :ensure nil)
-
 (use-package geiser)
 (use-package geiser-mit)
 (use-package paredit)
@@ -147,6 +144,7 @@
   :ensure t)
 
 (use-package paredit
+  :after (clojure-mode)
   :config
   (autoload 'enable-paredit-mode "paredit"
     "Turn on pseudo-structural editing of Lisp code."
@@ -155,7 +153,7 @@
   (add-hook 'lisp-mode-hook             'enable-paredit-mode)
   (add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
   (add-hook 'scheme-mode-hook           'enable-paredit-mode)
-  (add-hook 'clojure-mode               'enable-paredit-mode))
+  (add-hook 'clojure-mode-hook               'enable-paredit-mode))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
