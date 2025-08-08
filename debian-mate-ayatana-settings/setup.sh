@@ -10,6 +10,7 @@ cd $(dirname ${BASH_SOURCE[0]})
 # NOTE: for some reason this script added more than just jammy main to the dmas debian entry in /etc/apt/sources.list so I just went in and manually deleted it. Maybe this script is not idempotent? Be careful!
 
 if sudo -v; then
+    sudo apt-get --reinstall -o Dpkg::Options::=--force-confask -o Dpkg::Options::=--force-confnew install lightdm
     sudo apt-get update
     sudo apt-get install software-properties-common python3-launchpadlib
     sudo add-apt-repository -y main contrib non-free non-free-firmware
