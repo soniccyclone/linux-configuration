@@ -11,9 +11,9 @@ cd $(dirname ${BASH_SOURCE[0]})
 
 if sudo -v; then
     sudo apt-get --reinstall -o Dpkg::Options::=--force-confask -o Dpkg::Options::=--force-confnew install lightdm
-    sudo apt-get update
-    sudo apt-get install software-properties-common python3-launchpadlib
+    sudo apt-get -y update
+    sudo apt-get -y install software-properties-common python3-launchpadlib
     sudo add-apt-repository -y main contrib non-free non-free-firmware
     sudo add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/dmas/ubuntu jammy main"
-    sudo apt-get install debian-mate-ayatana-settings
+    sudo apt-get -y install debian-mate-ayatana-settings
 fi
