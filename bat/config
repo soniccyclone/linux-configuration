@@ -26,3 +26,4 @@
 
 -m '.sbclrc:Lisp'
 
+--theme="ansi"
