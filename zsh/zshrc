@@ -4,9 +4,6 @@
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
-
-# Emacs
-export LSP_USE_PLISTS=true
     
 # Aliases
 alias EDITOR="emacs"
