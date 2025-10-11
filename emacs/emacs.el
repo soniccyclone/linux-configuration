@@ -125,11 +125,6 @@
 (use-package slime
   :after (slime-setup '(slime-fancy slime-quicklisp slime-asdf)))
 
-(use-package color-theme-modern
-  :ensure t
-  :config
-  (load-theme 'xemacs t))
-
 ;; Some other themes I liked: bubbleberry-theme forest-blue-theme
 ;; autumn-light-theme afternoon-theme soft-morning-theme acme-theme
 
@@ -155,6 +150,32 @@
   (add-hook 'scheme-mode-hook           'enable-paredit-mode)
   (add-hook 'clojure-mode-hook               'enable-paredit-mode))
 
+;; lsp-java quick start
+(condition-case nil
+    (require 'use-package)
+  (file-error
+   (require 'package)
+   (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+   (package-initialize)
+   (package-refresh-contents)
+   (package-install 'use-package)
+   (setq use-package-always-ensure t)
+   (require 'use-package)))
+(use-package projectile)
+(use-package flycheck)
+(use-package yasnippet :config (yas-global-mode))
+(use-package lsp-mode
+  :hook ((lsp-mode . lsp-enable-which-key-integration))
+  :init (setq lsp-keymap-prefix "s-k"))
+(use-package hydra)
+(use-package company)
+(use-package lsp-ui)
+(use-package which-key :config (which-key-mode))
+(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+(use-package dap-mode :after lsp-mode :config (dap-auto-configure-mode))
+(use-package dap-java :ensure nil)
+(use-package lsp-treemacs)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -164,7 +185,10 @@
  '(display-fill-column-indicator-column 80)
  '(native-comp-async-report-warnings-errors 'silent)
  '(package-selected-packages
-   '(flycheck company flx-ido ido-completing-read+ ido-vertical-mode))
+   '(cider company flx-ido flycheck geiser-mit go-mode
+	   ido-completing-read+ ido-vertical-mode lsp-java lsp-ui
+	   macrostep-geiser paredit projectile rainbow-delimiters
+	   slime yasnippet))
  '(warning-supress-log-types '((comp) (bytecomp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
