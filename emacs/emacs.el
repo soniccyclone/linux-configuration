@@ -27,8 +27,11 @@
 ;; Emacs can automatically create backup files. This tells Emacs to
 ;; put all backups in ~/.emacs.d/backups. More info:
 ;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html
-(setq backup-directory-alist `(("." . ,(concat user-emacs-directory
-                                               "backups"))))
+;; If in my veracrypt mount, just put the backups in the same dir again.
+(setq backup-directory-alist
+      `(("/media/veracrypt1/" . nil)
+	("." . ,(concat user-emacs-directory
+                        "backups"))))
 (setq auto-save-default nil)
 
 (add-to-list 'default-frame-alist '(width . 85))
