@@ -3,6 +3,16 @@
 ;;; Commentary:
 ;;; This package provides my customized Emacs configuration.
 ;;; It is meant to be a lighter Emacs configuration as I enjoy most of the defaults.
+;;; Personal Documentation:
+;;; Figured I would start this personal documentation section to
+;;; ensure that I have one offline spot to view my reminders on some
+;;; key emacs commands that I constantly forget due to inconsistent
+;;; use.
+;;; Lookup docs for var: C-h v <var>
+;;; Find keybinding: C-h w <command>
+;;; View all keybindings: C-h b
+;;; Page through commands: C-x [pause for a sec] C-h n
+;;; Then C-h n to keep paging
 
 ;;; Code:
 
