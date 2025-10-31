@@ -176,6 +176,12 @@
 (use-package dap-java :ensure nil)
 (use-package lsp-treemacs)
 
+;; Always follow symlinks
+;; It's not dangerous to follow version controlled
+;; symlinks by default now since git doesn't rely
+;; on lockfiles like ancient VC systems did
+(setq vc-follow-symlinks t)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
