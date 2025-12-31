@@ -8,3 +8,40 @@ fi
 # Aliases
 alias EDITOR="emacs"
 
+
+#########################################
+# Stops and deletes all containers and
+# fully prunes the docker system.
+#########################################
+blast_away_docker() {
+    DOCKER_CONTAINERS=$(docker ps -a -q)
+    if [[ -n "$DOCKER_CONTAINERS" ]]; then
+       echo "$DOCKER_CONTAINERS"
+       docker stop "$DOCKER_CONTAINERS"
+       docker rm "$DOCKER_CONTAINERS"
+       docker system prune -a
+    else
+	echo "Nothing to clean up"
+    fi
+}
+
+stop_all_docker_containers() {
+    DOCKER_CONTAINERS=$(docker ps -a -q)
+    if [[ -n "$DOCKER_CONTAINERS" ]]; then
+       echo "$DOCKER_CONTAINERS"
+       docker stop "$DOCKER_CONTAINERS"
+    else
+	echo "Nothing to stop"
+    fi
+}
+
+remove_all_docker_containers() {
+    DOCKER_CONTAINERS=$(docker ps -a -q)
+    if [[ -n "$DOCKER_CONTAINERS" ]]; then
+       echo "$DOCKER_CONTAINERS"
+       docker rm "$DOCKER_CONTAINERS"
+    else
+	echo "Nothing to stop"
+    fi
+}
+
