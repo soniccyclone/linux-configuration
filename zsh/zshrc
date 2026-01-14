@@ -45,3 +45,5 @@ remove_all_docker_containers() {
     fi
 }
 
+export PATH="/home/nathan/.local/bin:$PATH"
+
