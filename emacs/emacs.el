@@ -203,11 +203,7 @@
  '(byte-compile-warnings '(not obsolete))
  '(display-fill-column-indicator-column 80)
  '(native-comp-async-report-warnings-errors 'silent)
- '(package-selected-packages
-   '(cider company flx-ido flycheck geiser-mit go-mode
-	   ido-completing-read+ ido-vertical-mode lsp-java lsp-ui
-	   macrostep-geiser paredit projectile rainbow-delimiters
-	   slime yasnippet))
+ '(package-selected-packages nil)
  '(warning-supress-log-types '((comp) (bytecomp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
