@@ -47,3 +47,5 @@ remove_all_docker_containers() {
 
 export PATH="/home/nathan/.local/bin:$PATH"
 
+# Needed because veracrypt can't auth properly on Fedora Rawhide
+alias s_veracrypt='sudo -v && veracrypt'
