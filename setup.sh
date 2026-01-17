@@ -3,7 +3,7 @@
 set -euo pipefail
 
 if sudo -v; then
-    sudo apt-get update -y
+    sudo dnf -qy update
 fi
 
 cd $(dirname ${BASH_SOURCE[0]})

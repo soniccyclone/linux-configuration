@@ -6,8 +6,7 @@ cd $(dirname ${BASH_SOURCE[0]})
 CWD=$(pwd)
 
 if sudo -v; then
-    sudo apt-get update -qy
-    sudo apt-get -qy install \
+    sudo dnf -qy install \
         emacs
 fi
 

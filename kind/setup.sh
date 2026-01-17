@@ -1,11 +1,12 @@
 #! /bin/bash
 
-set -eo pipefail
+set -euo pipefail
 
 cd $(dirname ${BASH_SOURCE[0]})
 
+echo "Installing kind."
 if sudo -v; then
 	sudo dnf -qy install \
-		tree
+		kind
 fi
 
