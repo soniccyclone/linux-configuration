@@ -195,6 +195,17 @@
 ;; on lockfiles like ancient VC systems did
 (setq vc-follow-symlinks t)
 
+;; Python Configuration
+;; (use-package pyvenv
+;;   :ensure t
+;;   :config
+;;   (pyvenv-tracking-mode 1))
+(use-package elpy)
+(use-package flymake-ruff
+    :ensure t
+    :hook (python-mode . flymake-ruff-load))
+(use-package toml-mode)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
