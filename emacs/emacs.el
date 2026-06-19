@@ -24,9 +24,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-;; Emacs can automatically create backup files. This tells Emacs to
-;; put all backups in ~/.emacs.d/backups. More info:
-;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html
+;; Set ~/.emacs.d/backups as my backups folder.
 ;; If in my veracrypt mount, just put the backups in the same dir again.
 (setq backup-directory-alist
       `(("/media/veracrypt1/" . nil)
@@ -54,7 +52,7 @@
 ;; Highlight cursor line
 (global-hl-line-mode)
 
-;; Setting up the package manager. Install if missing.
+;; Setup use-package
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -120,8 +118,7 @@
 (use-package flycheck
   :config (global-flycheck-mode +1))
 
-(use-package go-mode)
-
+;; Recommended packages I found while reading geiser info docs.
 (use-package geiser)
 (use-package geiser-mit)
 (use-package paredit)
@@ -151,6 +148,8 @@
 (use-package cider
   :ensure t)
 
+;; TODO: need to probs remove duplicate install above and hook into geiser
+;; mode/all lisp modes
 (use-package paredit
   :after (clojure-mode)
   :config
