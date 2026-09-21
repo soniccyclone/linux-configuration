@@ -36,8 +36,8 @@
 
 (add-to-list 'default-frame-alist '(width . 85))
 
-;; Change all yes/no questions to y/n type
-(fset 'yes-or-no-p 'y-or-n-p)
+;; Stops emacs from forcing me to type "yes" instead of hitting "y"
+(setq use-short-answers t)
 
 ;; Enable moving around windows instead of only cycling through them
 (global-set-key (kbd "<C-M-up>")    'windmove-up)
