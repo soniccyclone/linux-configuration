@@ -24,7 +24,9 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-;; Set ~/.emacs.d/backups as my backups folder.
+;; Emacs can automatically create backup files. This tells Emacs to
+;; put all backups in ~/.emacs.d/backups. More info:
+;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html
 ;; If in my veracrypt mount, just put the backups in the same dir again.
 (setq backup-directory-alist
       `(("/media/veracrypt1/" . nil)
@@ -34,8 +36,8 @@
 
 (add-to-list 'default-frame-alist '(width . 85))
 
-;; Change all yes/no questions to y/n type
-(fset 'yes-or-no-p 'y-or-n-p)
+;; Stops emacs from forcing me to type "yes" instead of hitting "y"
+(setq use-short-answers t)
 
 ;; Enable moving around windows instead of only cycling through them
 (global-set-key (kbd "<C-M-up>")    'windmove-up)
@@ -52,7 +54,7 @@
 ;; Highlight cursor line
 (global-hl-line-mode)
 
-;; Setup use-package
+;; Set up use-package
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -118,7 +120,8 @@
 (use-package flycheck
   :config (global-flycheck-mode +1))
 
-;; Recommended packages I found while reading geiser info docs.
+(use-package go-mode)
+
 (use-package geiser)
 (use-package geiser-mit)
 (use-package paredit)
@@ -148,8 +151,6 @@
 (use-package cider
   :ensure t)
 
-;; TODO: need to probs remove duplicate install above and hook into geiser
-;; mode/all lisp modes
 (use-package paredit
   :after (clojure-mode)
   :config
@@ -162,48 +163,11 @@
   (add-hook 'scheme-mode-hook           'enable-paredit-mode)
   (add-hook 'clojure-mode-hook               'enable-paredit-mode))
 
-;; lsp-java quick start
-(condition-case nil
-    (require 'use-package)
-  (file-error
-   (require 'package)
-   (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-   (package-initialize)
-   (package-refresh-contents)
-   (package-install 'use-package)
-   (setq use-package-always-ensure t)
-   (require 'use-package)))
-(use-package projectile)
-(use-package flycheck)
-(use-package yasnippet :config (yas-global-mode))
-(use-package lsp-mode
-  :hook ((lsp-mode . lsp-enable-which-key-integration))
-  :init (setq lsp-keymap-prefix "s-k"))
-(use-package hydra)
-(use-package company)
-(use-package lsp-ui)
-(use-package which-key :config (which-key-mode))
-(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
-(use-package dap-mode :after lsp-mode :config (dap-auto-configure-mode))
-(use-package dap-java :ensure nil)
-(use-package lsp-treemacs)
-
-;; Always follow symlinks
+;; Always follow symlinks.
 ;; It's not dangerous to follow version controlled
 ;; symlinks by default now since git doesn't rely
-;; on lockfiles like ancient VC systems did
+;; on lockfiles like ancient VC systems did.
 (setq vc-follow-symlinks t)
-
-;; Python Configuration
-;; (use-package pyvenv
-;;   :ensure t
-;;   :config
-;;   (pyvenv-tracking-mode 1))
-(use-package elpy)
-(use-package flymake-ruff
-    :ensure t
-    :hook (python-mode . flymake-ruff-load))
-(use-package toml-mode)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
