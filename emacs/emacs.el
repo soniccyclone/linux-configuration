@@ -2,7 +2,8 @@
 
 ;;; Commentary:
 ;;; This package provides my customized Emacs configuration.
-;;; It is meant to be a lighter Emacs configuration as I enjoy most of the defaults.
+;;; It is meant to be a lighter Emacs configuration as I enjoy most of the
+;;; defaults.
 ;;; Personal Documentation:
 ;;; Figured I would start this personal documentation section to
 ;;; ensure that I have one offline spot to view my reminders on some
@@ -16,6 +17,7 @@
 
 ;;; Code:
 
+;; melpa
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("melpa-stable" . "https://stable.melpa.org/packages/")
@@ -24,10 +26,9 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-;; Emacs can automatically create backup files. This tells Emacs to
-;; put all backups in ~/.emacs.d/backups. More info:
-;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html
-;; If in my veracrypt mount, just put the backups in the same dir again.
+;; Backup dir dumping to ~/.emacs.d/backups instead of in same dir.
+;; The veracrypt line is to prevent my encrypted journal from getting
+;; dumped to unencrypted space in a backup.
 (setq backup-directory-alist
       `(("/media/veracrypt1/" . nil)
 	("." . ,(concat user-emacs-directory
@@ -36,46 +37,25 @@
 
 (add-to-list 'default-frame-alist '(width . 85))
 
-;; Stops emacs from forcing me to type "yes" instead of hitting "y"
+;; stops emacs from forcing me to type "yes" instead of hitting "y"
 (setq use-short-answers t)
 
-;; Enable moving around windows instead of only cycling through them
-(global-set-key (kbd "<C-M-up>")    'windmove-up)
-(global-set-key (kbd "<C-M-down>")  'windmove-down)
-(global-set-key (kbd "<C-M-left>")  'windmove-left)
-(global-set-key (kbd "<C-M-right>") 'windmove-right)
+;; shift and arrow keys to navigate windows
+(windmove-default-keybindings)
 
-;; Setup line numbers
+;; line numbers
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
-;; Turn on 80 column marker
+;; 80 column marker line
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
-;; Highlight cursor line
+;; cursor line highlight
 (global-hl-line-mode)
-
-;; Set up use-package
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(eval-and-compile
-  (setq use-package-always-ensure t))
 
 ;; enable column numbers
 (use-package simple
   :ensure nil
   :config (column-number-mode +1))
-
-(use-package eldoc
-  :ensure nil
-  :diminish eldoc-mode
-  :config
-  (setq eldoc-idle-delay 0.4))
-
-(use-package paren
-  :ensure nil
-  :init (setq show-paren-delay 0)
-  :config (show-paren-mode +1))
 
 ;; delete intermediate buffers when navigating dired
 (use-package dired
@@ -87,25 +67,9 @@
         (put 'dired-find-alternate-file 'disabled nil)
         (define-key dired-mode-map (kbd "RET") #'dired-find-alternate-file))))
 
-(use-package ido
-  :config
-  (ido-mode +1)
-  (setq ido-everywhere t
-        ido-enable-flex-matching t))
-
-(use-package ido-vertical-mode
-  :config
-  (ido-vertical-mode +1)
-  (setq ido-vertical-define-keys 'C-n-C-p-up-and-down))
-
-(use-package ido-completing-read+
-  :config (ido-ubiquitous-mode +1))
-
-(use-package flx-ido
-  :config (flx-ido-mode +1))
+(fido-vertical-mode)
 
 (use-package company
-  :diminish company-mode
   :hook (prog-mode . company-mode)
   :config
   (setq company-minimum-prefix-length 1
@@ -117,14 +81,9 @@
   (define-key company-active-map (kbd "C-n") 'company-select-next)
   (define-key company-active-map (kbd "C-p") 'company-select-previous))
 
-(use-package flycheck
-  :config (global-flycheck-mode +1))
-
-(use-package go-mode)
-
+;; scheme
 (use-package geiser)
 (use-package geiser-mit)
-(use-package paredit)
 (use-package macrostep)
 
 (use-package macrostep-geiser
@@ -135,6 +94,7 @@
   :after geiser-repl
   :config (add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 
+;; common lisp
 (use-package slime
   :after (slime-setup '(slime-fancy slime-quicklisp slime-asdf)))
 
@@ -145,6 +105,7 @@
   :config
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
+;; clojure
 (use-package clojure-mode
   :ensure t)
 
@@ -163,6 +124,8 @@
   (add-hook 'scheme-mode-hook           'enable-paredit-mode)
   (add-hook 'clojure-mode-hook               'enable-paredit-mode))
 
+;; web stuff (js, ts, esx, tsx, etc.)
+
 ;; Always follow symlinks.
 ;; It's not dangerous to follow version controlled
 ;; symlinks by default now since git doesn't rely
@@ -177,7 +140,6 @@
  '(byte-compile-warnings '(not obsolete))
  '(display-fill-column-indicator-column 80)
  '(native-comp-async-report-warnings-errors 'silent)
- '(package-selected-packages nil)
  '(warning-supress-log-types '((comp) (bytecomp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
