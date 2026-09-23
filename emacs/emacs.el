@@ -26,6 +26,11 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
+;; suppress some irrelevant warnings clojure packages throw
+(setq byte-compile-warnings '(not obsolete docstrings lexical cl-functions))
+(setq native-comp-async-report-warnings-errors 'silent)
+(setq warning-suppress-log-types '((comp) (bytecomp)))
+
 ;; Backup dir dumping to ~/.emacs.d/backups instead of in same dir.
 ;; The veracrypt line is to prevent my encrypted journal from getting
 ;; dumped to unencrypted space in a backup.
@@ -48,6 +53,7 @@
 
 ;; 80 column marker line
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+(setq display-fill-column-indicator-column 80)
 
 ;; cursor line highlight
 (global-hl-line-mode)
@@ -118,22 +124,5 @@
 ;; symlinks by default now since git doesn't rely
 ;; on lockfiles like ancient VC systems did.
 (setq vc-follow-symlinks t)
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(byte-compile-warnings '(not obsolete))
- '(display-fill-column-indicator-column 80)
- '(native-comp-async-report-warnings-errors 'silent)
- '(package-selected-packages nil)
- '(warning-supress-log-types '((comp) (bytecomp))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 
 ;;; emacs.el ends here
