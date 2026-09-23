@@ -14,6 +14,8 @@
 ;;; View all keybindings: C-h b
 ;;; Page through commands: C-x [pause for a sec] C-h n
 ;;; Then C-h n to keep paging
+;;; Export org doc to html and open it:
+;;; C-c C-e h o
 
 ;;; Code:
 
@@ -123,6 +125,15 @@
 ;; symlinks by default now since git doesn't rely
 ;; on lockfiles like ancient VC systems did.
 (setq vc-follow-symlinks t)
+
+;; org mode stuff
+(use-package htmlize
+  :ensure t)
+
+;; markdown stuff
+(use-package markdown-mode
+  :ensure t
+  :custom (markdown-command "pandoc -f gfm -t html5 --standalone"))
 
 ;;; emacs.el ends here
 (custom-set-variables
