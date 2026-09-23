@@ -70,6 +70,7 @@
 (fido-vertical-mode)
 
 (use-package company
+  :ensure t
   :hook (prog-mode . company-mode)
   :config
   (setq company-minimum-prefix-length 1
@@ -81,31 +82,13 @@
   (define-key company-active-map (kbd "C-n") 'company-select-next)
   (define-key company-active-map (kbd "C-p") 'company-select-previous))
 
-;; scheme
-(use-package geiser)
-(use-package geiser-mit)
-(use-package macrostep)
 
-(use-package macrostep-geiser
-  :after geiser-mode
-  :config (add-hook 'geiser-mode-hook #'macrostep-geiser-setup))
-
-(use-package macrostep-geiser
-  :after geiser-repl
-  :config (add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
-
-;; common lisp
-(use-package slime
-  :after (slime-setup '(slime-fancy slime-quicklisp slime-asdf)))
-
-;; Some other themes I liked: bubbleberry-theme forest-blue-theme
-;; autumn-light-theme afternoon-theme soft-morning-theme acme-theme
-
+;; clojure
 (use-package rainbow-delimiters
+  :ensure t
   :config
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
-;; clojure
 (use-package clojure-mode
   :ensure t)
 
@@ -113,6 +96,7 @@
   :ensure t)
 
 (use-package paredit
+  :ensure t
   :after (clojure-mode)
   :config
   (autoload 'enable-paredit-mode "paredit"
@@ -143,6 +127,7 @@
  '(byte-compile-warnings '(not obsolete))
  '(display-fill-column-indicator-column 80)
  '(native-comp-async-report-warnings-errors 'silent)
+ '(package-selected-packages nil)
  '(warning-supress-log-types '((comp) (bytecomp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
