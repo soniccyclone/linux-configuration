@@ -126,6 +126,9 @@
 
 ;; web stuff (js, ts, esx, tsx, etc.)
 
+;; macos font fix
+(set-face-attribute 'default nil :height 140)
+
 ;; Always follow symlinks.
 ;; It's not dangerous to follow version controlled
 ;; symlinks by default now since git doesn't rely
