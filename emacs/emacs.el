@@ -2,7 +2,8 @@
 
 ;;; Commentary:
 ;;; This package provides my customized Emacs configuration.
-;;; It is meant to be a lighter Emacs configuration as I enjoy most of the defaults.
+;;; It is meant to be a lighter Emacs configuration as I enjoy most of the
+;;; defaults.
 ;;; Personal Documentation:
 ;;; Figured I would start this personal documentation section to
 ;;; ensure that I have one offline spot to view my reminders on some
@@ -16,6 +17,7 @@
 
 ;;; Code:
 
+;; melpa
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("melpa-stable" . "https://stable.melpa.org/packages/")
@@ -24,10 +26,9 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-;; Emacs can automatically create backup files. This tells Emacs to
-;; put all backups in ~/.emacs.d/backups. More info:
-;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html
-;; If in my veracrypt mount, just put the backups in the same dir again.
+;; Backup dir dumping to ~/.emacs.d/backups instead of in same dir.
+;; The veracrypt line is to prevent my encrypted journal from getting
+;; dumped to unencrypted space in a backup.
 (setq backup-directory-alist
       `(("/media/veracrypt1/" . nil)
 	("." . ,(concat user-emacs-directory
@@ -36,10 +37,10 @@
 
 (add-to-list 'default-frame-alist '(width . 85))
 
-;; Stops emacs from forcing me to type "yes" instead of hitting "y"
+;; stops emacs from forcing me to type "yes" instead of hitting "y"
 (setq use-short-answers t)
 
-;; Shift and arrow keys moves around windows
+;; shift and arrow keys to navigate windows
 (windmove-default-keybindings)
 
 ;; line numbers
@@ -80,6 +81,7 @@
   (define-key company-active-map (kbd "C-n") 'company-select-next)
   (define-key company-active-map (kbd "C-p") 'company-select-previous))
 
+;; scheme
 (use-package geiser)
 (use-package geiser-mit)
 (use-package macrostep)
@@ -92,6 +94,7 @@
   :after geiser-repl
   :config (add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 
+;; common lisp
 (use-package slime
   :after (slime-setup '(slime-fancy slime-quicklisp slime-asdf)))
 
@@ -102,6 +105,7 @@
   :config
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
+;; clojure
 (use-package clojure-mode
   :ensure t)
 
@@ -119,6 +123,8 @@
   (add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
   (add-hook 'scheme-mode-hook           'enable-paredit-mode)
   (add-hook 'clojure-mode-hook               'enable-paredit-mode))
+
+;; web stuff (js, ts, esx, tsx, etc.)
 
 ;; Always follow symlinks.
 ;; It's not dangerous to follow version controlled
