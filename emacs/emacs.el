@@ -28,7 +28,6 @@
 
 ;; suppress some irrelevant warnings clojure packages throw
 (setq byte-compile-warnings '(not obsolete docstrings lexical cl-functions))
-(setq native-comp-async-report-warnings-errors 'silent)
 (setq warning-suppress-log-types '((comp) (bytecomp)))
 
 ;; Backup dir dumping to ~/.emacs.d/backups instead of in same dir.
@@ -126,3 +125,15 @@
 (setq vc-follow-symlinks t)
 
 ;;; emacs.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
