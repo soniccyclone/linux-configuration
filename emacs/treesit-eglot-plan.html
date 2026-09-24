@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2026-09-24 Thu 13:34 -->
+<!-- 2026-09-24 Thu 15:25 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Tree-sitter + Eglot on Emacs 31.1: minimal setup plan</title>
@@ -202,41 +202,50 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org6170571">1. Context</a></li>
-<li><a href="#org5e8fc21">2. What Emacs 31 gives us (the knobs)</a>
+<li><a href="#org1076ce0">1. Context</a></li>
+<li><a href="#org2c0c4e1">2. What Emacs 31 gives us (the knobs)</a>
 <ul>
-<li><a href="#org07cb058">2.1. How the pieces chain together (this is the whole trick)</a></li>
-<li><a href="#orga019f40">2.2. Builtin ts-modes that register a remap (Emacs 31.1)</a></li>
-<li><a href="#org1e29356">2.3. What mhtml-ts-mode is</a></li>
+<li><a href="#org37fc557">2.1. How the pieces chain together (this is the whole trick)</a></li>
+<li><a href="#orgc51d038">2.2. Builtin ts-modes that register a remap (Emacs 31.1)</a></li>
+<li><a href="#org7651273">2.3. What mhtml-ts-mode is</a></li>
 </ul>
 </li>
-<li><a href="#org3518232">3. Proposed config</a>
+<li><a href="#org00e0aa6">3. Proposed config</a>
 <ul>
-<li><a href="#orgf061f45">3.1. Why each tree-sitter entry (and what is deliberately left out)</a></li>
-<li><a href="#org3f5f034">3.2. What eglot buys per language</a></li>
+<li><a href="#orgc72ddae">3.1. Why each tree-sitter entry (and what is deliberately left out)</a></li>
+<li><a href="#org15c4a3d">3.2. What eglot buys per language</a></li>
 </ul>
 </li>
-<li><a href="#org21b22a2">4. Decisions</a>
+<li><a href="#org21884cd">4. TypeScript 7 breaking change (2026-09-24)</a>
 <ul>
-<li><a href="#org1307f22">4.1. <code>treesit-enabled-modes</code>: explicit list (decided)</a></li>
-<li><a href="#org7c88bc1">4.2. <code>treesit-auto-install-grammar 'always</code> (keep)</a></li>
-<li><a href="#org1e5e3dc">4.3. <code>treesit-font-lock-level 4</code> (keep, Nathan's call)</a></li>
-<li><a href="#orgcce1779">4.4. bash-ts-mode: out (decided)</a></li>
-<li><a href="#org18abce5">4.5. go: out entirely (decided)</a></li>
-<li><a href="#org878c159">4.6. eglot: <code>eglot-ensure</code> in hooks, servers installed by setup.sh (decided)</a></li>
-<li><a href="#org051644e">4.7. Kubernetes yaml schema: no (decided)</a></li>
-<li><a href="#org2e817de">4.8. Language servers: global npm install (decided)</a></li>
-<li><a href="#orge429767">4.9. toml: out (decided)</a></li>
+<li><a href="#org6257339">4.1. What broke</a></li>
+<li><a href="#org67f0548">4.2. What the community did</a></li>
+<li><a href="#orgb88eef2">4.3. Verified locally</a></li>
+<li><a href="#org6359c5e">4.4. Decision: go native, drop the wrapper</a></li>
 </ul>
 </li>
-<li><a href="#orgefb8ce1">5. Prerequisites (setup.sh should install these)</a></li>
-<li><a href="#org5753958">6. Verification</a></li>
-<li><a href="#org94a4c82">7. Open questions for Nathan</a></li>
+<li><a href="#orgb64e3f8">5. Decisions</a>
+<ul>
+<li><a href="#org44687b3">5.1. <code>treesit-enabled-modes</code>: explicit list (decided)</a></li>
+<li><a href="#orgf66d9cc">5.2. <code>treesit-auto-install-grammar 'always</code> (keep)</a></li>
+<li><a href="#orgbcf6c0e">5.3. <code>treesit-font-lock-level 4</code> (keep, Nathan's call)</a></li>
+<li><a href="#org4636946">5.4. bash-ts-mode: out (decided)</a></li>
+<li><a href="#org3786e2e">5.5. go: out entirely (decided)</a></li>
+<li><a href="#org44931f4">5.6. TypeScript server: native <code>tsc --lsp</code> (decided, see section above)</a></li>
+<li><a href="#org271ba24">5.7. eglot: <code>eglot-ensure</code> in hooks, servers installed by setup.sh (decided)</a></li>
+<li><a href="#org1aaa99a">5.8. Kubernetes yaml schema: no (decided)</a></li>
+<li><a href="#orga5e403b">5.9. Language servers: global npm install (decided)</a></li>
+<li><a href="#orgc5eb65e">5.10. toml: out (decided)</a></li>
+</ul>
+</li>
+<li><a href="#orgc469821">6. Prerequisites (setup.sh should install these)</a></li>
+<li><a href="#org85aeace">7. Verification</a></li>
+<li><a href="#org571e7c5">8. Open questions for Nathan</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org6170571" class="outline-2">
-<h2 id="org6170571"><span class="section-number-2">1.</span> Context</h2>
+<div id="outline-container-org1076ce0" class="outline-2">
+<h2 id="org1076ce0"><span class="section-number-2">1.</span> Context</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 emacs.el has company-mode, clojure/cider/paredit, markdown, and (uncommitted)
@@ -260,8 +269,8 @@ use <code>gzcat</code> or <code>C-h v</code> / <code>C-h f</code> from inside Em
 </p>
 </div>
 </div>
-<div id="outline-container-org5e8fc21" class="outline-2">
-<h2 id="org5e8fc21"><span class="section-number-2">2.</span> What Emacs 31 gives us (the knobs)</h2>
+<div id="outline-container-org2c0c4e1" class="outline-2">
+<h2 id="org2c0c4e1"><span class="section-number-2">2.</span> What Emacs 31 gives us (the knobs)</h2>
 <div class="outline-text-2" id="text-2">
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 
@@ -337,8 +346,8 @@ use <code>gzcat</code> or <code>C-h v</code> / <code>C-h f</code> from inside Em
 </tbody>
 </table>
 </div>
-<div id="outline-container-org07cb058" class="outline-3">
-<h3 id="org07cb058"><span class="section-number-3">2.1.</span> How the pieces chain together (this is the whole trick)</h3>
+<div id="outline-container-org37fc557" class="outline-3">
+<h3 id="org37fc557"><span class="section-number-3">2.1.</span> How the pieces chain together (this is the whole trick)</h3>
 <div class="outline-text-3" id="text-2-1">
 <ol class="org-ol">
 <li>At startup, loaddefs.el runs 26 autoloaded forms like
@@ -373,8 +382,8 @@ mode falls back to fundamental-mode.  Needs <code>cc</code> and <code>git</code>
 </ol>
 </div>
 </div>
-<div id="outline-container-orga019f40" class="outline-3">
-<h3 id="orga019f40"><span class="section-number-3">2.2.</span> Builtin ts-modes that register a remap (Emacs 31.1)</h3>
+<div id="outline-container-orgc51d038" class="outline-3">
+<h3 id="orgc51d038"><span class="section-number-3">2.2.</span> Builtin ts-modes that register a remap (Emacs 31.1)</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 c, c++, cmake, csharp, css, dockerfile, elixir, go, go-mod, go-work, heex,
@@ -388,8 +397,8 @@ this, so cider/paredit keep working as-is.
 </p>
 </div>
 </div>
-<div id="outline-container-org1e29356" class="outline-3">
-<h3 id="org1e29356"><span class="section-number-3">2.3.</span> What mhtml-ts-mode is</h3>
+<div id="outline-container-org7651273" class="outline-3">
+<h3 id="org7651273"><span class="section-number-3">2.3.</span> What mhtml-ts-mode is</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 <code>lisp/textmodes/mhtml-ts-mode.el</code> (Vincenzo Pupillo, new in 31).  The "m" is
@@ -406,8 +415,8 @@ the remap catches every html file.
 </div>
 </div>
 </div>
-<div id="outline-container-org3518232" class="outline-2">
-<h2 id="org3518232"><span class="section-number-2">3.</span> Proposed config</h2>
+<div id="outline-container-org00e0aa6" class="outline-2">
+<h2 id="org00e0aa6"><span class="section-number-2">3.</span> Proposed config</h2>
 <div class="outline-text-2" id="text-3">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp"><code><span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">just make treesitter do what is obviously correct, for these langs only
@@ -429,14 +438,19 @@ the remap catches every html file.
   <span style="font-weight: bold;">:hook</span> ((typescript-ts-mode tsx-ts-mode js-ts-mode
           json-ts-mode css-ts-mode mhtml-ts-mode
           yaml-ts-mode dockerfile-ts-mode)
-         . eglot-ensure))
+         . eglot-ensure)
+  <span style="font-weight: bold;">:config</span>
+  <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">TypeScript 7 speaks LSP natively; eglot's builtin table still points
+</span>  <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">at the retired typescript-language-server wrapper.
+</span>  (add-to-list 'eglot-server-programs
+               '((typescript-ts-mode tsx-ts-mode js-ts-mode)
+                 . (<span style="font-style: italic;">"tsc"</span> <span style="font-style: italic;">"--lsp"</span> <span style="font-style: italic;">"--stdio"</span>))))
 </code></pre>
 </div>
 
 <p>
-Diff against what is in emacs.el right now: the value of
-<code>treesit-enabled-modes</code>, the eglot :custom line, and five more modes in the
-eglot hook.  The two mode lists are identical on purpose.
+Diff against what is in emacs.el right now: the eglot :config block.  The
+two mode lists are identical on purpose.
 </p>
 
 <p>
@@ -445,8 +459,8 @@ plugs into completion-at-point-functions, so completion works with no
 extra glue.
 </p>
 </div>
-<div id="outline-container-orgf061f45" class="outline-3">
-<h3 id="orgf061f45"><span class="section-number-3">3.1.</span> Why each tree-sitter entry (and what is deliberately left out)</h3>
+<div id="outline-container-orgc72ddae" class="outline-3">
+<h3 id="orgc72ddae"><span class="section-number-3">3.1.</span> Why each tree-sitter entry (and what is deliberately left out)</h3>
 <div class="outline-text-3" id="text-3-1">
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 
@@ -576,8 +590,8 @@ line: <code>(add-to-list 'auto-mode-alist '("\\.[mc]js\\'" . js-ts-mode))</code>
 </p>
 </div>
 </div>
-<div id="outline-container-org3f5f034" class="outline-3">
-<h3 id="org3f5f034"><span class="section-number-3">3.2.</span> What eglot buys per language</h3>
+<div id="outline-container-org15c4a3d" class="outline-3">
+<h3 id="org15c4a3d"><span class="section-number-3">3.2.</span> What eglot buys per language</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 eglot's builtin <code>eglot-server-programs</code> (eglot.el ~L250-340) already has an
@@ -610,9 +624,9 @@ capf, and diagnostics to flymake.
 <tbody>
 <tr>
 <td class="org-left">ts / tsx / js</td>
-<td class="org-left">typescript-language-server</td>
-<td class="org-left">typescript-language-server, typescript</td>
-<td class="org-left">The real deal: type errors, completion, xref (<code>M-.</code>), rename, hover, code actions (organize imports, quick fixes). Reason the whole thing exists.</td>
+<td class="org-left"><code>tsc --lsp --stdio</code> (TypeScript 7 native, overrides eglot default)</td>
+<td class="org-left">typescript</td>
+<td class="org-left">The real deal: type errors, completion, xref (<code>M-.</code>), rename, hover, code actions. Verified live on 2026-09-24 with Emacs 31.1: error + note diagnostics, hover, 20 completions, go-to-definition. See "TypeScript 7 breaking change".</td>
 </tr>
 
 <tr>
@@ -665,13 +679,104 @@ so opening one Dockerfile does not leave a node process running all day.
 </div>
 </div>
 </div>
-<div id="outline-container-org21b22a2" class="outline-2">
-<h2 id="org21b22a2"><span class="section-number-2">4.</span> Decisions</h2>
+<div id="outline-container-org21884cd" class="outline-2">
+<h2 id="org21884cd"><span class="section-number-2">4.</span> TypeScript 7 breaking change (2026-09-24)</h2>
 <div class="outline-text-2" id="text-4">
 </div>
-<div id="outline-container-org1307f22" class="outline-3">
-<h3 id="org1307f22"><span class="section-number-3">4.1.</span> <code>treesit-enabled-modes</code>: explicit list (decided)</h3>
+<div id="outline-container-org6257339" class="outline-3">
+<h3 id="org6257339"><span class="section-number-3">4.1.</span> What broke</h3>
 <div class="outline-text-3" id="text-4-1">
+<p>
+<code>npm i -g typescript</code> now yields 7.0.2, the Go-native rewrite.  Its npm
+package is a shim (<code>bin/tsc</code> exec's a native binary from
+<code>@typescript/typescript-darwin-arm64</code>) and ships no <code>lib/tsserver.js</code>.
+typescript-language-server exists to fork tsserver.js and translate LSP to
+the old tsserver protocol; its version provider hard-codes that file for
+both the workspace lookup and the global fallback (<code>src/tsServer/versionProvider.ts</code>).
+Result under eglot:
+</p>
+
+<pre class="example">
+-32603: Request initialize failed with message: Could not find a valid
+TypeScript installation. Please ensure that the "typescript" dependency is
+installed in the workspace or that a valid tsserver.path is specified.
+</pre>
+</div>
+</div>
+<div id="outline-container-org67f0548" class="outline-3">
+<h3 id="org67f0548"><span class="section-number-3">4.2.</span> What the community did</h3>
+<div class="outline-text-3" id="text-4-2">
+<ul class="org-ul">
+<li>typescript-language-server: README says TypeScript 7 "will hopefully
+supersede this project".  Issue #1110 (closed 2026-08-20, PR #1120) only
+made the TS 7 failure loud instead of silently falling back to an
+unrelated global TS.  v6.0.1 (2026-09-24) is bug fixes.  No TS 7 support
+planned.  Treat the wrapper as retired.</li>
+<li>TypeScript team: the native binary speaks LSP directly: <code>tsc --lsp --stdio</code>.
+For tooling that still needs the old JS API (typescript-eslint etc.) they
+publish <code>@typescript/typescript6</code> as an npm alias so both can coexist in
+one project.  7.0 has no programmatic API; 7.1 will add a new one.</li>
+<li>Neovim (nvim-lspconfig): new canonical <code>tsc</code> config runs <code>tsc --lsp --stdio</code>,
+preferring <code>node_modules/.bin/tsc</code> when it supports <code>--lsp</code>, else the one
+on PATH; root markers are lockfiles + .git.  The older <code>tsgo</code> config
+(from <code>@typescript/native-preview</code>) is deprecated in its favor.</li>
+<li>Zed, Sublime LSP-tsgo, Claude Code plugins: same move to the native server.</li>
+<li>Emacs: the one real gap was diagnostics.  tsgo only implements <b>pull</b>
+diagnostics (<code>textDocument/diagnostic</code>), and eglot historically only did
+push (<code>publishDiagnostics</code>), so errors never showed (eglot discussion
+#1559, typescript-go issue #2362).  João added pull support to eglot in
+Emacs master in Dec 2025.  It is in the eglot 1.24.31 bundled with
+Emacs 31.1 (<code>eglot.el</code> L3498 "Use pull diagnostics if server supports it").
+GNU ELPA's standalone eglot is still 1.23 and does not have it, so this
+only works because we are on 31.1 with the builtin eglot.</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgb88eef2" class="outline-3">
+<h3 id="orgb88eef2"><span class="section-number-3">4.3.</span> Verified locally</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Emacs 31.1 (emacs-app cask), bundled eglot, global typescript@7.0.2, a
+tsconfig.json project with <code>const x: number = "not a number"</code>:
+</p>
+
+<pre class="example">
+diagnostics=((eglot-note  "ts [6133]: 'x' is declared but its value is never read.")
+             (eglot-error "ts [2322]: Type 'string' is not assignable to type 'number'."))
+hover="var console: Console"
+completion-items=20
+definition-ok=t
+</pre>
+
+<p>
+One cosmetic warning on connect: "Server tried to register unsupported
+capability workspace/didChangeConfiguration".  Harmless, common.
+</p>
+</div>
+</div>
+<div id="outline-container-org6359c5e" class="outline-3">
+<h3 id="org6359c5e"><span class="section-number-3">4.4.</span> Decision: go native, drop the wrapper</h3>
+<div class="outline-text-3" id="text-4-4">
+<ul class="org-ul">
+<li>setup.sh: keep <code>typescript</code> (latest), remove <code>typescript-language-server</code>.</li>
+<li>emacs.el: one <code>add-to-list 'eglot-server-programs</code> in the eglot :config
+(see Proposed config).  Needed until eglot's builtin table catches up.</li>
+<li>Rejected: pinning <code>typescript@6</code> to keep typescript-language-server alive.
+Works today, but it is life support for a retired project.</li>
+<li>Rejected for now: nvim-style "prefer project-local tsc" lookup.  eglot
+accepts a function as the contact so it is doable, but it is code we do
+not need until a project pins a TS that disagrees with the global one.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-orgb64e3f8" class="outline-2">
+<h2 id="orgb64e3f8"><span class="section-number-2">5.</span> Decisions</h2>
+<div class="outline-text-2" id="text-5">
+</div>
+<div id="outline-container-org44687b3" class="outline-3">
+<h3 id="org44687b3"><span class="section-number-3">5.1.</span> <code>treesit-enabled-modes</code>: explicit list (decided)</h3>
+<div class="outline-text-3" id="text-5-1">
 <p>
 Rejected t because it remaps sh/python/c/etc. and triggers a clone+compile
 for languages that already have a better story or are not in use.  With a
@@ -681,9 +786,9 @@ which is the correct "I did not ask for this" behavior.
 </p>
 </div>
 </div>
-<div id="outline-container-org7c88bc1" class="outline-3">
-<h3 id="org7c88bc1"><span class="section-number-3">4.2.</span> <code>treesit-auto-install-grammar 'always</code> (keep)</h3>
-<div class="outline-text-3" id="text-4-2">
+<div id="outline-container-orgf66d9cc" class="outline-3">
+<h3 id="orgf66d9cc"><span class="section-number-3">5.2.</span> <code>treesit-auto-install-grammar 'always</code> (keep)</h3>
+<div class="outline-text-3" id="text-5-2">
 <p>
 With the list, the blast radius is 11 grammars (8 modes; mhtml pulls html,
 javascript, css, and jsdoc), each compiled once on first visit into
@@ -692,33 +797,37 @@ fundamental-mode, not an error.
 </p>
 </div>
 </div>
-<div id="outline-container-org1e5e3dc" class="outline-3">
-<h3 id="org1e5e3dc"><span class="section-number-3">4.3.</span> <code>treesit-font-lock-level 4</code> (keep, Nathan's call)</h3>
-<div class="outline-text-3" id="text-4-3">
+<div id="outline-container-orgbcf6c0e" class="outline-3">
+<h3 id="orgbcf6c0e"><span class="section-number-3">5.3.</span> <code>treesit-font-lock-level 4</code> (keep, Nathan's call)</h3>
+<div class="outline-text-3" id="text-5-3">
 <p>
 Maximum highlighting.  Level 3 is the default if it ever gets noisy.
 </p>
 </div>
 </div>
-<div id="outline-container-orgcce1779" class="outline-3">
-<h3 id="orgcce1779"><span class="section-number-3">4.4.</span> bash-ts-mode: out (decided)</h3>
-<div class="outline-text-3" id="text-4-4">
+<div id="outline-container-org4636946" class="outline-3">
+<h3 id="org4636946"><span class="section-number-3">5.4.</span> bash-ts-mode: out (decided)</h3>
+<div class="outline-text-3" id="text-5-4">
 <p>
 sh-mode stays.
 </p>
 </div>
 </div>
-<div id="outline-container-org18abce5" class="outline-3">
-<h3 id="org18abce5"><span class="section-number-3">4.5.</span> go: out entirely (decided)</h3>
-<div class="outline-text-3" id="text-4-5">
+<div id="outline-container-org3786e2e" class="outline-3">
+<h3 id="org3786e2e"><span class="section-number-3">5.5.</span> go: out entirely (decided)</h3>
+<div class="outline-text-3" id="text-5-5">
 <p>
 No go-ts-mode, no gopls.  Revisit only if Go shows up in real work.
 </p>
 </div>
 </div>
-<div id="outline-container-org878c159" class="outline-3">
-<h3 id="org878c159"><span class="section-number-3">4.6.</span> eglot: <code>eglot-ensure</code> in hooks, servers installed by setup.sh (decided)</h3>
-<div class="outline-text-3" id="text-4-6">
+<div id="outline-container-org44931f4" class="outline-3">
+<h3 id="org44931f4"><span class="section-number-3">5.6.</span> TypeScript server: native <code>tsc --lsp</code> (decided, see section above)</h3>
+</div>
+
+<div id="outline-container-org271ba24" class="outline-3">
+<h3 id="org271ba24"><span class="section-number-3">5.7.</span> eglot: <code>eglot-ensure</code> in hooks, servers installed by setup.sh (decided)</h3>
+<div class="outline-text-3" id="text-5-7">
 <p>
 eglot.el's docstring warns eglot-ensure is only wise if eglot can start
 "safely and efficiently for every buffer".  With setup.sh guaranteeing the
@@ -727,9 +836,9 @@ warning per buffer, not an error.
 </p>
 </div>
 </div>
-<div id="outline-container-org051644e" class="outline-3">
-<h3 id="org051644e"><span class="section-number-3">4.7.</span> Kubernetes yaml schema: no (decided)</h3>
-<div class="outline-text-3" id="text-4-7">
+<div id="outline-container-org1aaa99a" class="outline-3">
+<h3 id="org1aaa99a"><span class="section-number-3">5.8.</span> Kubernetes yaml schema: no (decided)</h3>
+<div class="outline-text-3" id="text-5-8">
 <p>
 yaml-language-server can validate manifests against the k8s OpenAPI schema
 (kind/apiVersion-aware key completion, field hover docs, required-field
@@ -740,9 +849,9 @@ better.  Generic SchemaStore matching stays on for compose, CI, and friends.
 </p>
 </div>
 </div>
-<div id="outline-container-org2e817de" class="outline-3">
-<h3 id="org2e817de"><span class="section-number-3">4.8.</span> Language servers: global npm install (decided)</h3>
-<div class="outline-text-3" id="text-4-8">
+<div id="outline-container-orga5e403b" class="outline-3">
+<h3 id="orga5e403b"><span class="section-number-3">5.9.</span> Language servers: global npm install (decided)</h3>
+<div class="outline-text-3" id="text-5-9">
 <p>
 Same model as VS Code, which ships servers inside its extensions.  The one
 place a global install could bite is TypeScript version skew, and
@@ -759,9 +868,9 @@ None of the other five servers have a per-project version concern.
 </p>
 </div>
 </div>
-<div id="outline-container-orge429767" class="outline-3">
-<h3 id="orge429767"><span class="section-number-3">4.9.</span> toml: out (decided)</h3>
-<div class="outline-text-3" id="text-4-9">
+<div id="outline-container-orgc5eb65e" class="outline-3">
+<h3 id="orgc5eb65e"><span class="section-number-3">5.10.</span> toml: out (decided)</h3>
+<div class="outline-text-3" id="text-5-10">
 <p>
 Rust and Python config format.  In this stack it is a fly/wrangler/netlify
 file a couple times a year, and builtin conf-toml-mode covers that.  Side
@@ -771,11 +880,11 @@ eight modes, so "has a grammar" and "has a server" mean the same thing.
 </div>
 </div>
 </div>
-<div id="outline-container-orgefb8ce1" class="outline-2">
-<h2 id="orgefb8ce1"><span class="section-number-2">5.</span> Prerequisites (setup.sh should install these)</h2>
-<div class="outline-text-2" id="text-5">
+<div id="outline-container-orgc469821" class="outline-2">
+<h2 id="orgc469821"><span class="section-number-2">6.</span> Prerequisites (setup.sh should install these)</h2>
+<div class="outline-text-2" id="text-6">
 <div class="org-src-container">
-<pre class="src src-sh"><code>npm i -g typescript typescript-language-server <span style="font-style: italic;">\</span>
+<pre class="src src-sh"><code>npm i -g typescript <span style="font-style: italic;">\</span>
           vscode-langservers-extracted <span style="font-style: italic;">\</span>
           yaml-language-server <span style="font-style: italic;">\</span>
           dockerfile-language-server-nodejs
@@ -785,15 +894,15 @@ eight modes, so "has a grammar" and "has a server" mean the same thing.
 
 <p>
 Binaries that land on PATH and that eglot looks for by name:
-<code>typescript-language-server</code>, <code>vscode-json-language-server</code>,
+<code>tsc</code> (TypeScript 7, serves LSP), <code>vscode-json-language-server</code>,
 <code>vscode-css-language-server</code>, <code>vscode-html-language-server</code>,
 <code>yaml-language-server</code>, <code>docker-langserver</code>.
 </p>
 </div>
 </div>
-<div id="outline-container-org5753958" class="outline-2">
-<h2 id="org5753958"><span class="section-number-2">6.</span> Verification</h2>
-<div class="outline-text-2" id="text-6">
+<div id="outline-container-org85aeace" class="outline-2">
+<h2 id="org85aeace"><span class="section-number-2">7.</span> Verification</h2>
+<div class="outline-text-2" id="text-7">
 <ol class="org-ol">
 <li>Restart Emacs (or eval the two blocks).</li>
 <li><code>C-h v treesit-enabled-modes</code> shows the 8-mode list; <code>C-h v major-mode-remap-alist</code>
@@ -817,18 +926,19 @@ flymake flags it.</li>
 <li>Open a .sh, .py, .toml, .go, .rs file: sh-mode, python-mode, conf-toml-mode,
 fundamental-mode, fundamental-mode, no grammar compile in <b>Messages</b>.
 Proves the list.</li>
-<li>In a .ts buffer inside a project with its own typescript, <code>M-x eglot-events-buffer</code>
-shows "Using Typescript version (workspace) &hellip;".</li>
+<li>In a .ts buffer, <code>M-x eglot-events-buffer</code> shows the <code>tsc --lsp</code> handshake
+and <code>textDocument/diagnostic</code> traffic; introduce a type error and flymake
+underlines it.</li>
 </ol>
 </div>
 </div>
-<div id="outline-container-org94a4c82" class="outline-2">
-<h2 id="org94a4c82"><span class="section-number-2">7.</span> Open questions for Nathan</h2>
-<div class="outline-text-2" id="text-7">
+<div id="outline-container-org571e7c5" class="outline-2">
+<h2 id="org571e7c5"><span class="section-number-2">8.</span> Open questions for Nathan</h2>
+<div class="outline-text-2" id="text-8">
 <p>
 None outstanding as of 2026-09-24.  Resolved this round: bash out, go out,
 python out, toml out, k8s schema no, global npm installs yes, eglot on all
-eight modes, autoshutdown on.
+eight modes, autoshutdown on, TypeScript server = native tsc &ndash;lsp.
 </p>
 </div>
 </div>
@@ -836,7 +946,7 @@ eight modes, autoshutdown on.
 <div id="postamble" class="status">
 <p class="date">Date: 2026-09-24</p>
 <p class="author">Author: Nathan Barlow / Claude</p>
-<p class="date">Created: 2026-09-24 Thu 13:34</p>
+<p class="date">Created: 2026-09-24 Thu 15:25</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

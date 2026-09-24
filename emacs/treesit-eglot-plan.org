@@ -107,12 +107,17 @@ the remap catches every html file.
   :hook ((typescript-ts-mode tsx-ts-mode js-ts-mode
           json-ts-mode css-ts-mode mhtml-ts-mode
           yaml-ts-mode dockerfile-ts-mode)
-         . eglot-ensure))
+         . eglot-ensure)
+  :config
+  ;; TypeScript 7 speaks LSP natively; eglot's builtin table still points
+  ;; at the retired typescript-language-server wrapper.
+  (add-to-list 'eglot-server-programs
+               '((typescript-ts-mode tsx-ts-mode js-ts-mode)
+                 . ("tsc" "--lsp" "--stdio"))))
 #+end_src
 
-Diff against what is in emacs.el right now: the value of
-=treesit-enabled-modes=, the eglot :custom line, and five more modes in the
-eglot hook.  The two mode lists are identical on purpose.
+Diff against what is in emacs.el right now: the eglot :config block.  The
+two mode lists are identical on purpose.
 
 Company already has company-capf in the default backends, and eglot
 plugs into completion-at-point-functions, so completion works with no
@@ -151,7 +156,7 @@ capf, and diagnostics to flymake.
 
 | Mode           | Server (eglot default)          | npm package                       | What you actually get                                                                                                          |
 |----------------+---------------------------------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------|
-| ts / tsx / js  | typescript-language-server      | typescript-language-server, typescript | The real deal: type errors, completion, xref (=M-.=), rename, hover, code actions (organize imports, quick fixes). Reason the whole thing exists. |
+| ts / tsx / js  | =tsc --lsp --stdio= (TypeScript 7 native, overrides eglot default) | typescript | The real deal: type errors, completion, xref (=M-.=), rename, hover, code actions. Verified live on 2026-09-24 with Emacs 31.1: error + note diagnostics, hover, 20 completions, go-to-definition. See "TypeScript 7 breaking change". |
 | yaml-ts-mode   | yaml-language-server            | yaml-language-server              | Best value of the config-file set. Pulls the SchemaStore catalog by default and matches on filename, so GitHub workflows, docker-compose, .gitlab-ci, etc. get key completion, hover docs, and validation for free. No Kubernetes schema wiring: manifests come out of cdk8s, so the source of truth is TypeScript and typescript-language-server already type-checks it. |
 | json-ts-mode   | vscode-json-language-server     | vscode-langservers-extracted      | Syntax diagnostics, formatting, and schema-driven completion/validation, but only when a schema is known: a =$schema= key in the file, or well-known names (package.json, tsconfig.json) via the SchemaStore catalog it ships with. Plain data JSON: syntax errors only. |
 | css-ts-mode    | vscode-css-language-server      | vscode-langservers-extracted      | Property and value completion, hover with MDN docs, lint diagnostics (unknown/duplicate props, vendor prefix nags), go-to-definition and rename for custom properties. Solid. |
@@ -164,6 +169,68 @@ installing, so they ride along.
 
 =eglot-autoshutdown t= kills a server when its last managed buffer closes,
 so opening one Dockerfile does not leave a node process running all day.
+
+* TypeScript 7 breaking change (2026-09-24)
+
+** What broke
+=npm i -g typescript= now yields 7.0.2, the Go-native rewrite.  Its npm
+package is a shim (=bin/tsc= exec's a native binary from
+=@typescript/typescript-darwin-arm64=) and ships no =lib/tsserver.js=.
+typescript-language-server exists to fork tsserver.js and translate LSP to
+the old tsserver protocol; its version provider hard-codes that file for
+both the workspace lookup and the global fallback (=src/tsServer/versionProvider.ts=).
+Result under eglot:
+
+: -32603: Request initialize failed with message: Could not find a valid
+: TypeScript installation. Please ensure that the "typescript" dependency is
+: installed in the workspace or that a valid tsserver.path is specified.
+
+** What the community did
+- typescript-language-server: README says TypeScript 7 "will hopefully
+  supersede this project".  Issue #1110 (closed 2026-08-20, PR #1120) only
+  made the TS 7 failure loud instead of silently falling back to an
+  unrelated global TS.  v6.0.1 (2026-09-24) is bug fixes.  No TS 7 support
+  planned.  Treat the wrapper as retired.
+- TypeScript team: the native binary speaks LSP directly: =tsc --lsp --stdio=.
+  For tooling that still needs the old JS API (typescript-eslint etc.) they
+  publish =@typescript/typescript6= as an npm alias so both can coexist in
+  one project.  7.0 has no programmatic API; 7.1 will add a new one.
+- Neovim (nvim-lspconfig): new canonical =tsc= config runs =tsc --lsp --stdio=,
+  preferring =node_modules/.bin/tsc= when it supports =--lsp=, else the one
+  on PATH; root markers are lockfiles + .git.  The older =tsgo= config
+  (from =@typescript/native-preview=) is deprecated in its favor.
+- Zed, Sublime LSP-tsgo, Claude Code plugins: same move to the native server.
+- Emacs: the one real gap was diagnostics.  tsgo only implements *pull*
+  diagnostics (=textDocument/diagnostic=), and eglot historically only did
+  push (=publishDiagnostics=), so errors never showed (eglot discussion
+  #1559, typescript-go issue #2362).  João added pull support to eglot in
+  Emacs master in Dec 2025.  It is in the eglot 1.24.31 bundled with
+  Emacs 31.1 (=eglot.el= L3498 "Use pull diagnostics if server supports it").
+  GNU ELPA's standalone eglot is still 1.23 and does not have it, so this
+  only works because we are on 31.1 with the builtin eglot.
+
+** Verified locally
+Emacs 31.1 (emacs-app cask), bundled eglot, global typescript@7.0.2, a
+tsconfig.json project with =const x: number = "not a number"=:
+
+: diagnostics=((eglot-note  "ts [6133]: 'x' is declared but its value is never read.")
+:              (eglot-error "ts [2322]: Type 'string' is not assignable to type 'number'."))
+: hover="var console: Console"
+: completion-items=20
+: definition-ok=t
+
+One cosmetic warning on connect: "Server tried to register unsupported
+capability workspace/didChangeConfiguration".  Harmless, common.
+
+** Decision: go native, drop the wrapper
+- setup.sh: keep =typescript= (latest), remove =typescript-language-server=.
+- emacs.el: one =add-to-list 'eglot-server-programs= in the eglot :config
+  (see Proposed config).  Needed until eglot's builtin table catches up.
+- Rejected: pinning =typescript@6= to keep typescript-language-server alive.
+  Works today, but it is life support for a retired project.
+- Rejected for now: nvim-style "prefer project-local tsc" lookup.  eglot
+  accepts a function as the contact so it is doable, but it is code we do
+  not need until a project pins a TS that disagrees with the global one.
 
 * Decisions
 
@@ -188,6 +255,8 @@ sh-mode stays.
 
 ** go: out entirely (decided)
 No go-ts-mode, no gopls.  Revisit only if Go shows up in real work.
+
+** TypeScript server: native =tsc --lsp= (decided, see section above)
 
 ** eglot: =eglot-ensure= in hooks, servers installed by setup.sh (decided)
 eglot.el's docstring warns eglot-ensure is only wise if eglot can start
@@ -226,7 +295,7 @@ eight modes, so "has a grammar" and "has a server" mean the same thing.
 * Prerequisites (setup.sh should install these)
 
 #+begin_src sh
-npm i -g typescript typescript-language-server \
+npm i -g typescript \
           vscode-langservers-extracted \
           yaml-language-server \
           dockerfile-language-server-nodejs
@@ -234,7 +303,7 @@ which cc git   # /usr/bin/cc /opt/homebrew/bin/git, already there
 #+end_src
 
 Binaries that land on PATH and that eglot looks for by name:
-=typescript-language-server=, =vscode-json-language-server=,
+=tsc= (TypeScript 7, serves LSP), =vscode-json-language-server=,
 =vscode-css-language-server=, =vscode-html-language-server=,
 =yaml-language-server=, =docker-langserver=.
 
@@ -262,11 +331,12 @@ Binaries that land on PATH and that eglot looks for by name:
 11. Open a .sh, .py, .toml, .go, .rs file: sh-mode, python-mode, conf-toml-mode,
     fundamental-mode, fundamental-mode, no grammar compile in *Messages*.
     Proves the list.
-12. In a .ts buffer inside a project with its own typescript, =M-x eglot-events-buffer=
-    shows "Using Typescript version (workspace) ...".
+12. In a .ts buffer, =M-x eglot-events-buffer= shows the =tsc --lsp= handshake
+    and =textDocument/diagnostic= traffic; introduce a type error and flymake
+    underlines it.
 
 * Open questions for Nathan
 
 None outstanding as of 2026-09-24.  Resolved this round: bash out, go out,
 python out, toml out, k8s schema no, global npm installs yes, eglot on all
-eight modes, autoshutdown on.
+eight modes, autoshutdown on, TypeScript server = native tsc --lsp.

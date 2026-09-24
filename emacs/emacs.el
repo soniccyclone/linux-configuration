@@ -135,7 +135,15 @@
   :hook ((typescript-ts-mode tsx-ts-mode js-ts-mode
 	  json-ts-mode css-ts-mode mhtml-ts-mode
 	  yaml-ts-mode dockerfile-ts-mode)
-	 . eglot-ensure))
+	 . eglot-ensure)
+  :config
+  ;; Fix for typescript 7 breaking everything with the switch to
+  ;; golang. This should be able to be removed once eglot updates
+  ;; to point at typescript directly as the language server.
+  (add-to-list 'eglot-server-programs
+	       '((typescript-ts-mode tsx-ts-mode js-ts-mode)
+		 . ("tsc" "--lsp" "--stdio")))
+  )
 
 ;; macos font fix
 (set-face-attribute 'default nil :height 140)
