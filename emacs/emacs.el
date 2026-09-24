@@ -1,4 +1,4 @@
-;;; emacs.el --- Configuration for my emacs
+;;; emacs.el --- Configuration for my emacs -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;;; This package provides my customized Emacs configuration.
@@ -143,7 +143,10 @@
   (add-to-list 'eglot-server-programs
 	       '((typescript-ts-mode tsx-ts-mode js-ts-mode)
 		 . ("tsc" "--lsp" "--stdio")))
-  )
+  (cl-defmethod eglot-register-capability
+    (_server (_method (eql workspace/didChangeConfiguration)) _id &rest _)
+    "TypeScript 7 registers this dynamically; eglot already sends it on connect."
+    nil))
 
 ;; macos font fix
 (set-face-attribute 'default nil :height 140)
