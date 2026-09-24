@@ -1,0 +1,272 @@
+#+TITLE: Tree-sitter + Eglot on Emacs 31.1: minimal setup plan
+#+AUTHOR: Nathan Barlow / Claude
+#+DATE: 2026-09-24
+#+STARTUP: showall
+
+* Context
+
+emacs.el has company-mode, clojure/cider/paredit, markdown, and (uncommitted)
+a first cut of treesit + eglot blocks using =treesit-enabled-modes t=.
+Goal: one use-package block for tree-sitter, one for eglot, leaning on the
+Emacs 31 "do the obvious thing" knobs instead of hand-maintained grammar
+recipe lists or the MELPA treesit-auto package.
+
+Rule of thumb for scope: any language with a bullet-proof REPL-driven mode
+(cider for clojure, slime/sly for common lisp) keeps that mode.  Tree-sitter
+and eglot are for the newgen web stack and the cloud/config file zoo.  Go is
+out entirely until it is actually in use.
+
+Everything below was read from the installed sources, not the manual:
+=/opt/homebrew/Cellar/emacs/31.1_1/share/emacs/31.1/= (lisp files are gzipped,
+use =gzcat= or =C-h v= / =C-h f= from inside Emacs).
+
+* What Emacs 31 gives us (the knobs)
+
+| Knob                              | Type      | Default     | Where                            | Does                                                                   |
+|-----------------------------------+-----------+-------------+----------------------------------+------------------------------------------------------------------------|
+| =treesit-enabled-modes=           | defcustom | nil         | lisp/treesit.el ~L5858           | t or list of ts-modes; :set pushes remaps into major-mode-remap-alist  |
+| =treesit-auto-install-grammar=    | defcustom | ask         | lisp/treesit.el ~L5798           | never / ask / ask-dir / always; consulted by treesit-ensure-installed  |
+| =treesit-extra-load-path=         | defcustom | nil         | src/treesit.c, cus-start.el L633 | first writable dir wins for installs; else ~/.emacs.d/tree-sitter      |
+| =treesit-language-source-alist=   | defvar    | nil         | lisp/treesit.el ~L5416           | grammar recipes; each ts-mode file adds its own pinned recipe          |
+| =treesit-major-mode-remap-alist=  | defvar    | (populated) | loaddefs.el                      | (old-mode . ts-mode) pairs, registered via autoload cookies at startup |
+| =treesit-font-lock-level=         | defcustom | 3           | lisp/treesit.el ~L1565           | 1..4, how much gets highlighted                                        |
+
+** How the pieces chain together (this is the whole trick)
+
+1. At startup, loaddefs.el runs 26 autoloaded forms like
+   =(add-to-list 'treesit-major-mode-remap-alist '(typescript-mode . typescript-ts-mode))=
+   and, for languages with no non-ts builtin mode (ts, tsx, yaml, dockerfile, ...),
+   also =(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode-maybe))=.
+   No file gets loaded for this; it's cheap.
+
+2. Setting =treesit-enabled-modes= runs its =:set= function, which walks
+   =treesit-major-mode-remap-alist= and copies matching pairs into
+   =major-mode-remap-alist=.  So =.js= -> javascript-mode -> remapped to js-ts-mode.
+   *Must be set via setopt / :custom / customize.*  A bare =setq= skips :set
+   and does nothing.  (:initialize is custom-initialize-default.)
+
+3. The =*-ts-mode-maybe= dispatchers (typescript-ts-mode.el L730) do:
+   if grammar available OR treesit-enabled-modes is t OR contains this mode
+   -> call the ts-mode, else fundamental-mode.
+
+4. Every builtin ts-mode body starts with
+   =(when (and (treesit-ensure-installed 'typescript) (treesit-ready-p 'typescript)) ...)=.
+   =treesit-ensure-installed= (treesit.el ~L5829) checks
+   =treesit-auto-install-grammar=: 'always => clone + cc + install with no
+   prompt; 'ask => y-or-n-p.  The recipe it uses was added to
+   =treesit-language-source-alist= at the top of that very mode file, pinned
+   to a specific commit (e.g. tree-sitter-typescript @ 8e13e1d).  We never
+   have to write recipes ourselves.
+
+5. Install failures do not crash the mode: =treesit-install-language-grammar=
+   wraps the build in condition-case and emits =display-warning=, then the
+   mode falls back to fundamental-mode.  Needs =cc= and =git= on PATH
+   (both present: /usr/bin/cc, /opt/homebrew/bin/git).
+
+** Builtin ts-modes that register a remap (Emacs 31.1)
+
+c, c++, cmake, csharp, css, dockerfile, elixir, go, go-mod, go-work, heex,
+java, js, json, lua, mhtml (html), php, python, ruby, rust, bash (sh-mode),
+toml, typescript, tsx, yaml, markdown.
+
+Not in the list: clojure.  clojure-mode from MELPA is untouched by any of
+this, so cider/paredit keep working as-is.
+
+** What mhtml-ts-mode is
+
+=lisp/textmodes/mhtml-ts-mode.el= (Vincenzo Pupillo, new in 31).  The "m" is
+"multi": one buffer, three parsers.  It derives from html-ts-mode (which
+derives from the classic html-mode) and uses =treesit-range-settings= to
+hand =<script>= bodies to the javascript parser and =<style>= bodies to the
+css parser, so each region gets that language's font-lock, indent, and
+imenu.  It calls =treesit-ensure-installed= for html, javascript, and css
+(so opening one .html pulls three grammars), plus jsdoc opportunistically.
+It replaces =mhtml-mode=, which did the same job with three syntax tables
+and a lot of regexp heuristics.  files.el maps =\.s?html?= to mhtml-mode, so
+the remap catches every html file.
+
+* Proposed config
+
+#+begin_src emacs-lisp
+;; just make treesitter do what is obviously correct, for these langs only
+(use-package treesit
+  :ensure nil
+  :custom
+  (treesit-enabled-modes '(;; newgen web
+                           typescript-ts-mode tsx-ts-mode js-ts-mode
+                           json-ts-mode css-ts-mode mhtml-ts-mode
+                           ;; cloud / config
+                           yaml-ts-mode dockerfile-ts-mode))
+  (treesit-auto-install-grammar 'always)
+  (treesit-font-lock-level 4))
+
+;; eglot on every mode we have a language server for; setup.sh installs them
+(use-package eglot
+  :ensure nil
+  :custom (eglot-autoshutdown t)
+  :hook ((typescript-ts-mode tsx-ts-mode js-ts-mode
+          json-ts-mode css-ts-mode mhtml-ts-mode
+          yaml-ts-mode dockerfile-ts-mode)
+         . eglot-ensure))
+#+end_src
+
+Diff against what is in emacs.el right now: the value of
+=treesit-enabled-modes=, the eglot :custom line, and five more modes in the
+eglot hook.  The two mode lists are identical on purpose.
+
+Company already has company-capf in the default backends, and eglot
+plugs into completion-at-point-functions, so completion works with no
+extra glue.
+
+** Why each tree-sitter entry (and what is deliberately left out)
+
+| Mode               | File types                             | Verdict | Note                                                     |
+|--------------------+----------------------------------------+---------+----------------------------------------------------------|
+| typescript-ts-mode | .ts                                    | in      | no non-ts builtin; without it .ts opens in fundamental   |
+| tsx-ts-mode        | .tsx                                   | in      | same                                                     |
+| js-ts-mode         | .js .jsm .jsx .har                     | in      | remaps javascript-mode; files.el pattern is \.js[mx]?    |
+| json-ts-mode       | .json                                  | in      | remaps js-json-mode                                      |
+| css-ts-mode        | .css                                   | in      | remaps css-mode                                          |
+| mhtml-ts-mode      | .html .htm .shtml .xhtml               | in      | remaps mhtml-mode; html+css+js in one buffer             |
+| yaml-ts-mode       | .yml .yaml                             | in      | k8s, compose, CI; no non-ts builtin                      |
+| toml-ts-mode       | .toml                                  | out     | Cargo/pyproject territory; conf-toml-mode is enough      |
+| dockerfile-ts-mode | Dockerfile, Containerfile, .dockerfile | in      | no non-ts builtin                                        |
+| bash-ts-mode       | .sh                                    | out     | sh-mode is fine; killed 2026-09-24                       |
+| go-*-ts-mode       | .go go.mod go.work                     | out     | not in use; removed from the config entirely             |
+| rust-ts-mode       | .rs                                    | out     | not cloud, not web                                       |
+| everything else    |                                        | out     | not the stack; markdown-mode from MELPA stays            |
+| clojure            |                                        | never   | cider wins; clojure-ts-mode would displace paredit hook  |
+
+Note on .mjs/.cjs: the builtin auto-mode-alist pattern is =\.js[mx]?\'=, so
+=.mjs= and =.cjs= are not covered out of the box.  If you hit them, one
+line: =(add-to-list 'auto-mode-alist '("\\.[mc]js\\'" . js-ts-mode))=.
+
+** What eglot buys per language
+
+eglot's builtin =eglot-server-programs= (eglot.el ~L250-340) already has an
+entry for every mode below, so no server config in emacs.el.  Matching is by
+=provided-mode-derived-p=, which is why the plain =html-mode= entry catches
+mhtml-ts-mode.  All of these servers hand completions to company through
+capf, and diagnostics to flymake.
+
+| Mode           | Server (eglot default)          | npm package                       | What you actually get                                                                                                          |
+|----------------+---------------------------------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------|
+| ts / tsx / js  | typescript-language-server      | typescript-language-server, typescript | The real deal: type errors, completion, xref (=M-.=), rename, hover, code actions (organize imports, quick fixes). Reason the whole thing exists. |
+| yaml-ts-mode   | yaml-language-server            | yaml-language-server              | Best value of the config-file set. Pulls the SchemaStore catalog by default and matches on filename, so GitHub workflows, docker-compose, .gitlab-ci, etc. get key completion, hover docs, and validation for free. No Kubernetes schema wiring: manifests come out of cdk8s, so the source of truth is TypeScript and typescript-language-server already type-checks it. |
+| json-ts-mode   | vscode-json-language-server     | vscode-langservers-extracted      | Syntax diagnostics, formatting, and schema-driven completion/validation, but only when a schema is known: a =$schema= key in the file, or well-known names (package.json, tsconfig.json) via the SchemaStore catalog it ships with. Plain data JSON: syntax errors only. |
+| css-ts-mode    | vscode-css-language-server      | vscode-langservers-extracted      | Property and value completion, hover with MDN docs, lint diagnostics (unknown/duplicate props, vendor prefix nags), go-to-definition and rename for custom properties. Solid. |
+| mhtml-ts-mode  | vscode-html-language-server     | vscode-langservers-extracted      | Tag and attribute completion, hover, document symbols, formatting. Embedded css/js in =<style>= / =<script>= also get completion. Moderate; tree-sitter already covers the highlight/indent side. |
+| dockerfile-ts-mode | docker-langserver           | dockerfile-language-server-nodejs | Instruction and flag completion, diagnostics for invalid instructions or deprecated forms, hover docs, formatting. Thin but the flymake diagnostics catch typos before a build does. |
+
+Honest read: ts/js and yaml carry their weight.  css is nice.  json, html,
+dockerfile are cheap because the servers come from packages we're already
+installing, so they ride along.
+
+=eglot-autoshutdown t= kills a server when its last managed buffer closes,
+so opening one Dockerfile does not leave a node process running all day.
+
+* Decisions
+
+** =treesit-enabled-modes=: explicit list (decided)
+Rejected t because it remaps sh/python/c/etc. and triggers a clone+compile
+for languages that already have a better story or are not in use.  With a
+list, the =*-ts-mode-maybe= dispatchers only fire for listed modes, so
+unlisted .ts-style files with no non-ts builtin fall to fundamental-mode,
+which is the correct "I did not ask for this" behavior.
+
+** =treesit-auto-install-grammar 'always= (keep)
+With the list, the blast radius is 11 grammars (8 modes; mhtml pulls html,
+javascript, css, and jsdoc), each compiled once on first visit into
+~/.emacs.d/tree-sitter.  Offline or with a dead repo you get a warning and
+fundamental-mode, not an error.
+
+** =treesit-font-lock-level 4= (keep, Nathan's call)
+Maximum highlighting.  Level 3 is the default if it ever gets noisy.
+
+** bash-ts-mode: out (decided)
+sh-mode stays.
+
+** go: out entirely (decided)
+No go-ts-mode, no gopls.  Revisit only if Go shows up in real work.
+
+** eglot: =eglot-ensure= in hooks, servers installed by setup.sh (decided)
+eglot.el's docstring warns eglot-ensure is only wise if eglot can start
+"safely and efficiently for every buffer".  With setup.sh guaranteeing the
+binaries exist, that holds.  If a server is missing you get one echo-area
+warning per buffer, not an error.
+
+** Kubernetes yaml schema: no (decided)
+yaml-language-server can validate manifests against the k8s OpenAPI schema
+(kind/apiVersion-aware key completion, field hover docs, required-field
+errors), but only for hand-written YAML.  With cdk8s the manifests are
+synthesized output; the source is TypeScript with typed constructs, and
+typescript-language-server catches the same class of errors earlier and
+better.  Generic SchemaStore matching stays on for compose, CI, and friends.
+
+** Language servers: global npm install (decided)
+Same model as VS Code, which ships servers inside its extensions.  The one
+place a global install could bite is TypeScript version skew, and
+typescript-language-server handles it: in =src/lsp-server.ts= it picks the
+TS version as (1) explicit =tsserver.path= init option, (2) the workspace's
+=node_modules/typescript=, (3) the =typescript= package installed next to
+the server.  So the binary is global but every real project runs its own
+TypeScript, which is stricter than VS Code's default of its bundled TS.
+=typescript= is only a devDependency of the server, hence the explicit
+=npm i -g typescript= alongside it, as the fallback for scratch files outside
+a project.  eglot logs the chosen version in the events buffer:
+"Using Typescript version (workspace|bundled) x.y.z from path ...".
+None of the other five servers have a per-project version concern.
+
+** toml: out (decided)
+Rust and Python config format.  In this stack it is a fly/wrangler/netlify
+file a couple times a year, and builtin conf-toml-mode covers that.  Side
+benefit: the tree-sitter list and the eglot hook list are now the same
+eight modes, so "has a grammar" and "has a server" mean the same thing.
+
+* Prerequisites (setup.sh should install these)
+
+#+begin_src sh
+npm i -g typescript typescript-language-server \
+          vscode-langservers-extracted \
+          yaml-language-server \
+          dockerfile-language-server-nodejs
+which cc git   # /usr/bin/cc /opt/homebrew/bin/git, already there
+#+end_src
+
+Binaries that land on PATH and that eglot looks for by name:
+=typescript-language-server=, =vscode-json-language-server=,
+=vscode-css-language-server=, =vscode-html-language-server=,
+=yaml-language-server=, =docker-langserver=.
+
+* Verification
+
+1. Restart Emacs (or eval the two blocks).
+2. =C-h v treesit-enabled-modes= shows the 8-mode list; =C-h v major-mode-remap-alist=
+   has exactly 8 entries, one per listed mode (every builtin ts-mode
+   registers a remap pair in loaddefs even when the "from" mode is not
+   builtin, e.g. typescript-mode . typescript-ts-mode).
+3. Open a .ts file: watch *Messages* for the clone/compile, then
+   =C-h v major-mode= => typescript-ts-mode, and =M-x treesit-explore-mode=
+   shows a live parse tree.
+4. =ls ~/.emacs.d/tree-sitter/= shows libtree-sitter-typescript.dylib.
+5. Open a .tsx and a .js file: tsx-ts-mode / js-ts-mode, one more compile each.
+6. In the .ts buffer, mode line shows "eglot" and =M-.= jumps to a
+   definition; company popup shows LSP candidates.
+7. Open a .html file: mhtml-ts-mode, three grammar compiles, eglot attached
+   (=M-x eglot-events-buffer= shows vscode-html-language-server).
+8. Open a docker-compose.yml: yaml-ts-mode, eglot attached, typo a key and
+   flymake flags it.
+9. Kill all yaml buffers; =M-x list-processes= shows yaml-language-server gone
+   (autoshutdown).
+10. Open a .clj file: still clojure-mode, paredit still on.
+11. Open a .sh, .py, .toml, .go, .rs file: sh-mode, python-mode, conf-toml-mode,
+    fundamental-mode, fundamental-mode, no grammar compile in *Messages*.
+    Proves the list.
+12. In a .ts buffer inside a project with its own typescript, =M-x eglot-events-buffer=
+    shows "Using Typescript version (workspace) ...".
+
+* Open questions for Nathan
+
+None outstanding as of 2026-09-24.  Resolved this round: bash out, go out,
+python out, toml out, k8s schema no, global npm installs yes, eglot on all
+eight modes, autoshutdown on.

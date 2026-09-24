@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2026-09-24 Thu 13:34 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tree-sitter + Eglot on Emacs 31.1: minimal setup plan</title>
+<meta name="author" content="Nathan Barlow / Claude" />
+<meta name="generator" content="Org Mode" />
+<style type="text/css">
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-c:before { content: 'C'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'JavaScript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { }
+</style>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Tree-sitter + Eglot on Emacs 31.1: minimal setup plan</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org6170571">1. Context</a></li>
+<li><a href="#org5e8fc21">2. What Emacs 31 gives us (the knobs)</a>
+<ul>
+<li><a href="#org07cb058">2.1. How the pieces chain together (this is the whole trick)</a></li>
+<li><a href="#orga019f40">2.2. Builtin ts-modes that register a remap (Emacs 31.1)</a></li>
+<li><a href="#org1e29356">2.3. What mhtml-ts-mode is</a></li>
+</ul>
+</li>
+<li><a href="#org3518232">3. Proposed config</a>
+<ul>
+<li><a href="#orgf061f45">3.1. Why each tree-sitter entry (and what is deliberately left out)</a></li>
+<li><a href="#org3f5f034">3.2. What eglot buys per language</a></li>
+</ul>
+</li>
+<li><a href="#org21b22a2">4. Decisions</a>
+<ul>
+<li><a href="#org1307f22">4.1. <code>treesit-enabled-modes</code>: explicit list (decided)</a></li>
+<li><a href="#org7c88bc1">4.2. <code>treesit-auto-install-grammar 'always</code> (keep)</a></li>
+<li><a href="#org1e5e3dc">4.3. <code>treesit-font-lock-level 4</code> (keep, Nathan's call)</a></li>
+<li><a href="#orgcce1779">4.4. bash-ts-mode: out (decided)</a></li>
+<li><a href="#org18abce5">4.5. go: out entirely (decided)</a></li>
+<li><a href="#org878c159">4.6. eglot: <code>eglot-ensure</code> in hooks, servers installed by setup.sh (decided)</a></li>
+<li><a href="#org051644e">4.7. Kubernetes yaml schema: no (decided)</a></li>
+<li><a href="#org2e817de">4.8. Language servers: global npm install (decided)</a></li>
+<li><a href="#orge429767">4.9. toml: out (decided)</a></li>
+</ul>
+</li>
+<li><a href="#orgefb8ce1">5. Prerequisites (setup.sh should install these)</a></li>
+<li><a href="#org5753958">6. Verification</a></li>
+<li><a href="#org94a4c82">7. Open questions for Nathan</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org6170571" class="outline-2">
+<h2 id="org6170571"><span class="section-number-2">1.</span> Context</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+emacs.el has company-mode, clojure/cider/paredit, markdown, and (uncommitted)
+a first cut of treesit + eglot blocks using <code>treesit-enabled-modes t</code>.
+Goal: one use-package block for tree-sitter, one for eglot, leaning on the
+Emacs 31 "do the obvious thing" knobs instead of hand-maintained grammar
+recipe lists or the MELPA treesit-auto package.
+</p>
+
+<p>
+Rule of thumb for scope: any language with a bullet-proof REPL-driven mode
+(cider for clojure, slime/sly for common lisp) keeps that mode.  Tree-sitter
+and eglot are for the newgen web stack and the cloud/config file zoo.  Go is
+out entirely until it is actually in use.
+</p>
+
+<p>
+Everything below was read from the installed sources, not the manual:
+<code>/opt/homebrew/Cellar/emacs/31.1_1/share/emacs/31.1/</code> (lisp files are gzipped,
+use <code>gzcat</code> or <code>C-h v</code> / <code>C-h f</code> from inside Emacs).
+</p>
+</div>
+</div>
+<div id="outline-container-org5e8fc21" class="outline-2">
+<h2 id="org5e8fc21"><span class="section-number-2">2.</span> What Emacs 31 gives us (the knobs)</h2>
+<div class="outline-text-2" id="text-2">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Knob</th>
+<th scope="col" class="org-left">Type</th>
+<th scope="col" class="org-left">Default</th>
+<th scope="col" class="org-left">Where</th>
+<th scope="col" class="org-left">Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left"><code>treesit-enabled-modes</code></td>
+<td class="org-left">defcustom</td>
+<td class="org-left">nil</td>
+<td class="org-left">lisp/treesit.el ~L5858</td>
+<td class="org-left">t or list of ts-modes; :set pushes remaps into major-mode-remap-alist</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>treesit-auto-install-grammar</code></td>
+<td class="org-left">defcustom</td>
+<td class="org-left">ask</td>
+<td class="org-left">lisp/treesit.el ~L5798</td>
+<td class="org-left">never / ask / ask-dir / always; consulted by treesit-ensure-installed</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>treesit-extra-load-path</code></td>
+<td class="org-left">defcustom</td>
+<td class="org-left">nil</td>
+<td class="org-left">src/treesit.c, cus-start.el L633</td>
+<td class="org-left">first writable dir wins for installs; else ~/.emacs.d/tree-sitter</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>treesit-language-source-alist</code></td>
+<td class="org-left">defvar</td>
+<td class="org-left">nil</td>
+<td class="org-left">lisp/treesit.el ~L5416</td>
+<td class="org-left">grammar recipes; each ts-mode file adds its own pinned recipe</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>treesit-major-mode-remap-alist</code></td>
+<td class="org-left">defvar</td>
+<td class="org-left">(populated)</td>
+<td class="org-left">loaddefs.el</td>
+<td class="org-left">(old-mode . ts-mode) pairs, registered via autoload cookies at startup</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>treesit-font-lock-level</code></td>
+<td class="org-left">defcustom</td>
+<td class="org-left">3</td>
+<td class="org-left">lisp/treesit.el ~L1565</td>
+<td class="org-left">1..4, how much gets highlighted</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="outline-container-org07cb058" class="outline-3">
+<h3 id="org07cb058"><span class="section-number-3">2.1.</span> How the pieces chain together (this is the whole trick)</h3>
+<div class="outline-text-3" id="text-2-1">
+<ol class="org-ol">
+<li>At startup, loaddefs.el runs 26 autoloaded forms like
+<code>(add-to-list 'treesit-major-mode-remap-alist '(typescript-mode . typescript-ts-mode))</code>
+and, for languages with no non-ts builtin mode (ts, tsx, yaml, dockerfile, &hellip;),
+also <code>(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode-maybe))</code>.
+No file gets loaded for this; it's cheap.</li>
+
+<li>Setting <code>treesit-enabled-modes</code> runs its <code>:set</code> function, which walks
+<code>treesit-major-mode-remap-alist</code> and copies matching pairs into
+<code>major-mode-remap-alist</code>.  So <code>.js</code> -&gt; javascript-mode -&gt; remapped to js-ts-mode.
+<b>Must be set via setopt / :custom / customize.</b>  A bare <code>setq</code> skips :set
+and does nothing.  (:initialize is custom-initialize-default.)</li>
+
+<li>The <code>*-ts-mode-maybe</code> dispatchers (typescript-ts-mode.el L730) do:
+if grammar available OR treesit-enabled-modes is t OR contains this mode
+-&gt; call the ts-mode, else fundamental-mode.</li>
+
+<li>Every builtin ts-mode body starts with
+<code>(when (and (treesit-ensure-installed 'typescript) (treesit-ready-p 'typescript)) ...)</code>.
+<code>treesit-ensure-installed</code> (treesit.el ~L5829) checks
+<code>treesit-auto-install-grammar</code>: 'always <code>&gt; clone + cc + install with no
+   prompt; 'ask =&gt; y-or-n-p.  The recipe it uses was added to
+   =treesit-language-source-alist</code> at the top of that very mode file, pinned
+to a specific commit (e.g. tree-sitter-typescript @ 8e13e1d).  We never
+have to write recipes ourselves.</li>
+
+<li>Install failures do not crash the mode: <code>treesit-install-language-grammar</code>
+wraps the build in condition-case and emits <code>display-warning</code>, then the
+mode falls back to fundamental-mode.  Needs <code>cc</code> and <code>git</code> on PATH
+(both present: /usr/bin/cc, /opt/homebrew/bin/git).</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-orga019f40" class="outline-3">
+<h3 id="orga019f40"><span class="section-number-3">2.2.</span> Builtin ts-modes that register a remap (Emacs 31.1)</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+c, c++, cmake, csharp, css, dockerfile, elixir, go, go-mod, go-work, heex,
+java, js, json, lua, mhtml (html), php, python, ruby, rust, bash (sh-mode),
+toml, typescript, tsx, yaml, markdown.
+</p>
+
+<p>
+Not in the list: clojure.  clojure-mode from MELPA is untouched by any of
+this, so cider/paredit keep working as-is.
+</p>
+</div>
+</div>
+<div id="outline-container-org1e29356" class="outline-3">
+<h3 id="org1e29356"><span class="section-number-3">2.3.</span> What mhtml-ts-mode is</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+<code>lisp/textmodes/mhtml-ts-mode.el</code> (Vincenzo Pupillo, new in 31).  The "m" is
+"multi": one buffer, three parsers.  It derives from html-ts-mode (which
+derives from the classic html-mode) and uses <code>treesit-range-settings</code> to
+hand <code>&lt;script&gt;</code> bodies to the javascript parser and <code>&lt;style&gt;</code> bodies to the
+css parser, so each region gets that language's font-lock, indent, and
+imenu.  It calls <code>treesit-ensure-installed</code> for html, javascript, and css
+(so opening one .html pulls three grammars), plus jsdoc opportunistically.
+It replaces <code>mhtml-mode</code>, which did the same job with three syntax tables
+and a lot of regexp heuristics.  files.el maps <code>\.s?html?</code> to mhtml-mode, so
+the remap catches every html file.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org3518232" class="outline-2">
+<h2 id="org3518232"><span class="section-number-2">3.</span> Proposed config</h2>
+<div class="outline-text-2" id="text-3">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code><span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">just make treesitter do what is obviously correct, for these langs only
+</span>(<span style="font-weight: bold;">use-package</span> treesit
+  <span style="font-weight: bold;">:ensure</span> nil
+  <span style="font-weight: bold;">:custom</span>
+  (treesit-enabled-modes '(<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">newgen web
+</span>                           typescript-ts-mode tsx-ts-mode js-ts-mode
+                           json-ts-mode css-ts-mode mhtml-ts-mode
+                           <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">cloud / config
+</span>                           yaml-ts-mode dockerfile-ts-mode))
+  (treesit-auto-install-grammar 'always)
+  (treesit-font-lock-level 4))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">eglot on every mode we have a language server for; setup.sh installs them
+</span>(<span style="font-weight: bold;">use-package</span> eglot
+  <span style="font-weight: bold;">:ensure</span> nil
+  <span style="font-weight: bold;">:custom</span> (eglot-autoshutdown t)
+  <span style="font-weight: bold;">:hook</span> ((typescript-ts-mode tsx-ts-mode js-ts-mode
+          json-ts-mode css-ts-mode mhtml-ts-mode
+          yaml-ts-mode dockerfile-ts-mode)
+         . eglot-ensure))
+</code></pre>
+</div>
+
+<p>
+Diff against what is in emacs.el right now: the value of
+<code>treesit-enabled-modes</code>, the eglot :custom line, and five more modes in the
+eglot hook.  The two mode lists are identical on purpose.
+</p>
+
+<p>
+Company already has company-capf in the default backends, and eglot
+plugs into completion-at-point-functions, so completion works with no
+extra glue.
+</p>
+</div>
+<div id="outline-container-orgf061f45" class="outline-3">
+<h3 id="orgf061f45"><span class="section-number-3">3.1.</span> Why each tree-sitter entry (and what is deliberately left out)</h3>
+<div class="outline-text-3" id="text-3-1">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Mode</th>
+<th scope="col" class="org-left">File types</th>
+<th scope="col" class="org-left">Verdict</th>
+<th scope="col" class="org-left">Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">typescript-ts-mode</td>
+<td class="org-left">.ts</td>
+<td class="org-left">in</td>
+<td class="org-left">no non-ts builtin; without it .ts opens in fundamental</td>
+</tr>
+
+<tr>
+<td class="org-left">tsx-ts-mode</td>
+<td class="org-left">.tsx</td>
+<td class="org-left">in</td>
+<td class="org-left">same</td>
+</tr>
+
+<tr>
+<td class="org-left">js-ts-mode</td>
+<td class="org-left">.js .jsm .jsx .har</td>
+<td class="org-left">in</td>
+<td class="org-left">remaps javascript-mode; files.el pattern is \.js[mx]?</td>
+</tr>
+
+<tr>
+<td class="org-left">json-ts-mode</td>
+<td class="org-left">.json</td>
+<td class="org-left">in</td>
+<td class="org-left">remaps js-json-mode</td>
+</tr>
+
+<tr>
+<td class="org-left">css-ts-mode</td>
+<td class="org-left">.css</td>
+<td class="org-left">in</td>
+<td class="org-left">remaps css-mode</td>
+</tr>
+
+<tr>
+<td class="org-left">mhtml-ts-mode</td>
+<td class="org-left">.html .htm .shtml .xhtml</td>
+<td class="org-left">in</td>
+<td class="org-left">remaps mhtml-mode; html+css+js in one buffer</td>
+</tr>
+
+<tr>
+<td class="org-left">yaml-ts-mode</td>
+<td class="org-left">.yml .yaml</td>
+<td class="org-left">in</td>
+<td class="org-left">k8s, compose, CI; no non-ts builtin</td>
+</tr>
+
+<tr>
+<td class="org-left">toml-ts-mode</td>
+<td class="org-left">.toml</td>
+<td class="org-left">out</td>
+<td class="org-left">Cargo/pyproject territory; conf-toml-mode is enough</td>
+</tr>
+
+<tr>
+<td class="org-left">dockerfile-ts-mode</td>
+<td class="org-left">Dockerfile, Containerfile, .dockerfile</td>
+<td class="org-left">in</td>
+<td class="org-left">no non-ts builtin</td>
+</tr>
+
+<tr>
+<td class="org-left">bash-ts-mode</td>
+<td class="org-left">.sh</td>
+<td class="org-left">out</td>
+<td class="org-left">sh-mode is fine; killed 2026-09-24</td>
+</tr>
+
+<tr>
+<td class="org-left">go-*-ts-mode</td>
+<td class="org-left">.go go.mod go.work</td>
+<td class="org-left">out</td>
+<td class="org-left">not in use; removed from the config entirely</td>
+</tr>
+
+<tr>
+<td class="org-left">rust-ts-mode</td>
+<td class="org-left">.rs</td>
+<td class="org-left">out</td>
+<td class="org-left">not cloud, not web</td>
+</tr>
+
+<tr>
+<td class="org-left">everything else</td>
+<td class="org-left">&nbsp;</td>
+<td class="org-left">out</td>
+<td class="org-left">not the stack; markdown-mode from MELPA stays</td>
+</tr>
+
+<tr>
+<td class="org-left">clojure</td>
+<td class="org-left">&nbsp;</td>
+<td class="org-left">never</td>
+<td class="org-left">cider wins; clojure-ts-mode would displace paredit hook</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Note on .mjs/.cjs: the builtin auto-mode-alist pattern is <code>\.js[mx]?\'</code>, so
+<code>.mjs</code> and <code>.cjs</code> are not covered out of the box.  If you hit them, one
+line: <code>(add-to-list 'auto-mode-alist '("\\.[mc]js\\'" . js-ts-mode))</code>.
+</p>
+</div>
+</div>
+<div id="outline-container-org3f5f034" class="outline-3">
+<h3 id="org3f5f034"><span class="section-number-3">3.2.</span> What eglot buys per language</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+eglot's builtin <code>eglot-server-programs</code> (eglot.el ~L250-340) already has an
+entry for every mode below, so no server config in emacs.el.  Matching is by
+<code>provided-mode-derived-p</code>, which is why the plain <code>html-mode</code> entry catches
+mhtml-ts-mode.  All of these servers hand completions to company through
+capf, and diagnostics to flymake.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Mode</th>
+<th scope="col" class="org-left">Server (eglot default)</th>
+<th scope="col" class="org-left">npm package</th>
+<th scope="col" class="org-left">What you actually get</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">ts / tsx / js</td>
+<td class="org-left">typescript-language-server</td>
+<td class="org-left">typescript-language-server, typescript</td>
+<td class="org-left">The real deal: type errors, completion, xref (<code>M-.</code>), rename, hover, code actions (organize imports, quick fixes). Reason the whole thing exists.</td>
+</tr>
+
+<tr>
+<td class="org-left">yaml-ts-mode</td>
+<td class="org-left">yaml-language-server</td>
+<td class="org-left">yaml-language-server</td>
+<td class="org-left">Best value of the config-file set. Pulls the SchemaStore catalog by default and matches on filename, so GitHub workflows, docker-compose, .gitlab-ci, etc. get key completion, hover docs, and validation for free. No Kubernetes schema wiring: manifests come out of cdk8s, so the source of truth is TypeScript and typescript-language-server already type-checks it.</td>
+</tr>
+
+<tr>
+<td class="org-left">json-ts-mode</td>
+<td class="org-left">vscode-json-language-server</td>
+<td class="org-left">vscode-langservers-extracted</td>
+<td class="org-left">Syntax diagnostics, formatting, and schema-driven completion/validation, but only when a schema is known: a <code>$schema</code> key in the file, or well-known names (package.json, tsconfig.json) via the SchemaStore catalog it ships with. Plain data JSON: syntax errors only.</td>
+</tr>
+
+<tr>
+<td class="org-left">css-ts-mode</td>
+<td class="org-left">vscode-css-language-server</td>
+<td class="org-left">vscode-langservers-extracted</td>
+<td class="org-left">Property and value completion, hover with MDN docs, lint diagnostics (unknown/duplicate props, vendor prefix nags), go-to-definition and rename for custom properties. Solid.</td>
+</tr>
+
+<tr>
+<td class="org-left">mhtml-ts-mode</td>
+<td class="org-left">vscode-html-language-server</td>
+<td class="org-left">vscode-langservers-extracted</td>
+<td class="org-left">Tag and attribute completion, hover, document symbols, formatting. Embedded css/js in <code>&lt;style&gt;</code> / <code>&lt;script&gt;</code> also get completion. Moderate; tree-sitter already covers the highlight/indent side.</td>
+</tr>
+
+<tr>
+<td class="org-left">dockerfile-ts-mode</td>
+<td class="org-left">docker-langserver</td>
+<td class="org-left">dockerfile-language-server-nodejs</td>
+<td class="org-left">Instruction and flag completion, diagnostics for invalid instructions or deprecated forms, hover docs, formatting. Thin but the flymake diagnostics catch typos before a build does.</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Honest read: ts/js and yaml carry their weight.  css is nice.  json, html,
+dockerfile are cheap because the servers come from packages we're already
+installing, so they ride along.
+</p>
+
+<p>
+<code>eglot-autoshutdown t</code> kills a server when its last managed buffer closes,
+so opening one Dockerfile does not leave a node process running all day.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org21b22a2" class="outline-2">
+<h2 id="org21b22a2"><span class="section-number-2">4.</span> Decisions</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-org1307f22" class="outline-3">
+<h3 id="org1307f22"><span class="section-number-3">4.1.</span> <code>treesit-enabled-modes</code>: explicit list (decided)</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+Rejected t because it remaps sh/python/c/etc. and triggers a clone+compile
+for languages that already have a better story or are not in use.  With a
+list, the <code>*-ts-mode-maybe</code> dispatchers only fire for listed modes, so
+unlisted .ts-style files with no non-ts builtin fall to fundamental-mode,
+which is the correct "I did not ask for this" behavior.
+</p>
+</div>
+</div>
+<div id="outline-container-org7c88bc1" class="outline-3">
+<h3 id="org7c88bc1"><span class="section-number-3">4.2.</span> <code>treesit-auto-install-grammar 'always</code> (keep)</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+With the list, the blast radius is 11 grammars (8 modes; mhtml pulls html,
+javascript, css, and jsdoc), each compiled once on first visit into
+~/.emacs.d/tree-sitter.  Offline or with a dead repo you get a warning and
+fundamental-mode, not an error.
+</p>
+</div>
+</div>
+<div id="outline-container-org1e5e3dc" class="outline-3">
+<h3 id="org1e5e3dc"><span class="section-number-3">4.3.</span> <code>treesit-font-lock-level 4</code> (keep, Nathan's call)</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Maximum highlighting.  Level 3 is the default if it ever gets noisy.
+</p>
+</div>
+</div>
+<div id="outline-container-orgcce1779" class="outline-3">
+<h3 id="orgcce1779"><span class="section-number-3">4.4.</span> bash-ts-mode: out (decided)</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+sh-mode stays.
+</p>
+</div>
+</div>
+<div id="outline-container-org18abce5" class="outline-3">
+<h3 id="org18abce5"><span class="section-number-3">4.5.</span> go: out entirely (decided)</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+No go-ts-mode, no gopls.  Revisit only if Go shows up in real work.
+</p>
+</div>
+</div>
+<div id="outline-container-org878c159" class="outline-3">
+<h3 id="org878c159"><span class="section-number-3">4.6.</span> eglot: <code>eglot-ensure</code> in hooks, servers installed by setup.sh (decided)</h3>
+<div class="outline-text-3" id="text-4-6">
+<p>
+eglot.el's docstring warns eglot-ensure is only wise if eglot can start
+"safely and efficiently for every buffer".  With setup.sh guaranteeing the
+binaries exist, that holds.  If a server is missing you get one echo-area
+warning per buffer, not an error.
+</p>
+</div>
+</div>
+<div id="outline-container-org051644e" class="outline-3">
+<h3 id="org051644e"><span class="section-number-3">4.7.</span> Kubernetes yaml schema: no (decided)</h3>
+<div class="outline-text-3" id="text-4-7">
+<p>
+yaml-language-server can validate manifests against the k8s OpenAPI schema
+(kind/apiVersion-aware key completion, field hover docs, required-field
+errors), but only for hand-written YAML.  With cdk8s the manifests are
+synthesized output; the source is TypeScript with typed constructs, and
+typescript-language-server catches the same class of errors earlier and
+better.  Generic SchemaStore matching stays on for compose, CI, and friends.
+</p>
+</div>
+</div>
+<div id="outline-container-org2e817de" class="outline-3">
+<h3 id="org2e817de"><span class="section-number-3">4.8.</span> Language servers: global npm install (decided)</h3>
+<div class="outline-text-3" id="text-4-8">
+<p>
+Same model as VS Code, which ships servers inside its extensions.  The one
+place a global install could bite is TypeScript version skew, and
+typescript-language-server handles it: in <code>src/lsp-server.ts</code> it picks the
+TS version as (1) explicit <code>tsserver.path</code> init option, (2) the workspace's
+<code>node_modules/typescript</code>, (3) the <code>typescript</code> package installed next to
+the server.  So the binary is global but every real project runs its own
+TypeScript, which is stricter than VS Code's default of its bundled TS.
+<code>typescript</code> is only a devDependency of the server, hence the explicit
+<code>npm i -g typescript</code> alongside it, as the fallback for scratch files outside
+a project.  eglot logs the chosen version in the events buffer:
+"Using Typescript version (workspace|bundled) x.y.z from path &hellip;".
+None of the other five servers have a per-project version concern.
+</p>
+</div>
+</div>
+<div id="outline-container-orge429767" class="outline-3">
+<h3 id="orge429767"><span class="section-number-3">4.9.</span> toml: out (decided)</h3>
+<div class="outline-text-3" id="text-4-9">
+<p>
+Rust and Python config format.  In this stack it is a fly/wrangler/netlify
+file a couple times a year, and builtin conf-toml-mode covers that.  Side
+benefit: the tree-sitter list and the eglot hook list are now the same
+eight modes, so "has a grammar" and "has a server" mean the same thing.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgefb8ce1" class="outline-2">
+<h2 id="orgefb8ce1"><span class="section-number-2">5.</span> Prerequisites (setup.sh should install these)</h2>
+<div class="outline-text-2" id="text-5">
+<div class="org-src-container">
+<pre class="src src-sh"><code>npm i -g typescript typescript-language-server <span style="font-style: italic;">\</span>
+          vscode-langservers-extracted <span style="font-style: italic;">\</span>
+          yaml-language-server <span style="font-style: italic;">\</span>
+          dockerfile-language-server-nodejs
+<span style="font-weight: bold;">which</span> cc git   <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">/usr/bin/cc /opt/homebrew/bin/git, already there</span>
+</code></pre>
+</div>
+
+<p>
+Binaries that land on PATH and that eglot looks for by name:
+<code>typescript-language-server</code>, <code>vscode-json-language-server</code>,
+<code>vscode-css-language-server</code>, <code>vscode-html-language-server</code>,
+<code>yaml-language-server</code>, <code>docker-langserver</code>.
+</p>
+</div>
+</div>
+<div id="outline-container-org5753958" class="outline-2">
+<h2 id="org5753958"><span class="section-number-2">6.</span> Verification</h2>
+<div class="outline-text-2" id="text-6">
+<ol class="org-ol">
+<li>Restart Emacs (or eval the two blocks).</li>
+<li><code>C-h v treesit-enabled-modes</code> shows the 8-mode list; <code>C-h v major-mode-remap-alist</code>
+has exactly 8 entries, one per listed mode (every builtin ts-mode
+registers a remap pair in loaddefs even when the "from" mode is not
+builtin, e.g. typescript-mode . typescript-ts-mode).</li>
+<li>Open a .ts file: watch <b>Messages</b> for the clone/compile, then
+<code>C-h v major-mode</code> <code>&gt; typescript-ts-mode, and =M-x treesit-explore-mode</code>
+shows a live parse tree.</li>
+<li><code>ls ~/.emacs.d/tree-sitter/</code> shows libtree-sitter-typescript.dylib.</li>
+<li>Open a .tsx and a .js file: tsx-ts-mode / js-ts-mode, one more compile each.</li>
+<li>In the .ts buffer, mode line shows "eglot" and <code>M-.</code> jumps to a
+definition; company popup shows LSP candidates.</li>
+<li>Open a .html file: mhtml-ts-mode, three grammar compiles, eglot attached
+(<code>M-x eglot-events-buffer</code> shows vscode-html-language-server).</li>
+<li>Open a docker-compose.yml: yaml-ts-mode, eglot attached, typo a key and
+flymake flags it.</li>
+<li>Kill all yaml buffers; <code>M-x list-processes</code> shows yaml-language-server gone
+(autoshutdown).</li>
+<li>Open a .clj file: still clojure-mode, paredit still on.</li>
+<li>Open a .sh, .py, .toml, .go, .rs file: sh-mode, python-mode, conf-toml-mode,
+fundamental-mode, fundamental-mode, no grammar compile in <b>Messages</b>.
+Proves the list.</li>
+<li>In a .ts buffer inside a project with its own typescript, <code>M-x eglot-events-buffer</code>
+shows "Using Typescript version (workspace) &hellip;".</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-org94a4c82" class="outline-2">
+<h2 id="org94a4c82"><span class="section-number-2">7.</span> Open questions for Nathan</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+None outstanding as of 2026-09-24.  Resolved this round: bash out, go out,
+python out, toml out, k8s schema no, global npm installs yes, eglot on all
+eight modes, autoshutdown on.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2026-09-24</p>
+<p class="author">Author: Nathan Barlow / Claude</p>
+<p class="date">Created: 2026-09-24 Thu 13:34</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

@@ -115,7 +115,27 @@
   (add-hook 'scheme-mode-hook           'enable-paredit-mode)
   (add-hook 'clojure-mode-hook               'enable-paredit-mode))
 
-;; web stuff (js, ts, esx, tsx, etc.)
+;; just make treesitter do what is obviously correct
+(use-package treesit
+  :ensure nil
+  :custom
+  (treesit-enabled-modes '(typescript-ts-mode
+			   tsx-ts-mode js-ts-mode
+			   json-ts-mode css-ts-mode
+			   mhtml-ts-mode
+			   yaml-ts-mode
+			   dockerfile-ts-mode))
+  (treesit-auto-install-grammar 'always)
+  (treesit-font-lock-level 4))
+
+;; turn on eglot for javascript
+(use-package eglot
+  :ensure nil
+  :custom (eglot-autoshutdown t)
+  :hook ((typescript-ts-mode tsx-ts-mode js-ts-mode
+	  json-ts-mode css-ts-mode mhtml-ts-mode
+	  yaml-ts-mode dockerfile-ts-mode)
+	 . eglot-ensure))
 
 ;; macos font fix
 (set-face-attribute 'default nil :height 140)
