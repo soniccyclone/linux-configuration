@@ -14,6 +14,8 @@
 ;;; View all keybindings: C-h b
 ;;; Page through commands: C-x [pause for a sec] C-h n
 ;;; Then C-h n to keep paging
+;;; Read emacs source code:
+;;; M-x find-library <guess at source file name>
 
 ;;; Code:
 
