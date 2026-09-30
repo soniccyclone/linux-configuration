@@ -46,8 +46,9 @@
 ;; stops emacs from forcing me to type "yes" instead of hitting "y"
 (setq use-short-answers t)
 
-;; shift and arrow keys to navigate windows
-(windmove-default-keybindings)
+;; super plus arrow keys for moving around since macos intercepts
+;; the other nice modifiers and I need shift for org mode workflow
+(windmove-default-keybindings 'super)
 
 ;; line numbers
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
