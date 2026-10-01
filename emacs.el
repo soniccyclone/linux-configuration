@@ -129,22 +129,25 @@
 			   json-ts-mode css-ts-mode
 			   mhtml-ts-mode
 			   yaml-ts-mode
-			   dockerfile-ts-mode))
+			   dockerfile-ts-mode
+			   python-ts-mode))
   (treesit-auto-install-grammar 'always)
-  (treesit-font-lock-level 4))
+  (treesit-font-lock-level 4)
+  :config
+  ;; hook up js treesitter to the specialized javascript files
+  (add-to-list 'auto-mode-alist '("\\.[cm]js\\'" . js-ts-mode)))
 
-;; turn on eglot for javascript
 (use-package eglot
   :ensure nil
   :custom (eglot-autoshutdown t)
   :hook ((typescript-ts-mode tsx-ts-mode js-ts-mode
 	  json-ts-mode css-ts-mode mhtml-ts-mode
-	  yaml-ts-mode dockerfile-ts-mode)
+	  yaml-ts-mode dockerfile-ts-mode
+	  python-ts-mode
+	  terraform-mode)
 	 . eglot-ensure)
   :config
-  ;; Fix for typescript 7 breaking everything with the switch to
-  ;; golang. This should be able to be removed once eglot updates
-  ;; to point at typescript directly as the language server.
+  ;; TS7 fixes but maybe I should just downgrade to TS6...
   (add-to-list 'eglot-server-programs
 	       '((typescript-ts-mode tsx-ts-mode js-ts-mode)
 		 . ("tsc" "--lsp" "--stdio")))
@@ -170,6 +173,34 @@
 (use-package markdown-mode
   :ensure t
   :custom (markdown-command "pandoc -f gfm -t html5 --standalone"))
+
+(use-package envrc
+  :ensure t
+  :config (envrc-global-mode +1))
+
+(use-package terraform-mode
+  :ensure t)
+
+(use-package feature-mode
+  :ensure t)
+
+(use-package flymake-kondor
+  :ensure t
+  :hook (clojure-mode . flymake-kondor-setup))
+
+(use-package apheleia
+  :ensure t
+  :custom
+  (apheleia-formatters-respect-indent-level nil))
+
+(use-package restclient
+  :ensure t
+  :mode ("\\.http\\'" . restclient-mode))
+
+(use-package bruno
+  :vc (:url "https://git.sr.ht/~nathanb/bruno-mode" :branch "main"))
+
+(setq sql-product 'postgres)
 
 ;;; emacs.el ends here
 (custom-set-variables
