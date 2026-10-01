@@ -2,24 +2,34 @@
 
 set -euo pipefail
 
-# Every installer below depends on brew, so bootstrap it first.
+cd "$(dirname "${BASH_SOURCE[0]}")"
+CWD=$(pwd)
+
 if ! command -v brew >/dev/null; then
-    echo "Installing Homebrew."
+    echo "Installing homebrew."
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    # A fresh install isn't on PATH yet; Apple Silicon vs Intel prefix.
-    eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
+# this line also updates everything if this is running against
+# a pre-existing install
 brew update
-# Updated once above; don't re-run it on every brew install in the children.
 export HOMEBREW_NO_AUTO_UPDATE=1
-# Homebrew 7 prompts before installing anything with dependencies.
 export HOMEBREW_NO_ASK=1
 
-cd $(dirname ${BASH_SOURCE[0]})
-for service in *; do
-	if [ -d "${service}" ]; then
-		echo "Setting up ${service}."
-		./${service}/setup.sh
-	fi
-done
+echo "Installing brew bundle."
+brew bundle install --file="${CWD}/Brewfile"
+
+echo "Installing global node packages."
+npm i -g typescript \
+    vscode-langservers-extracted \
+    yaml-language-server \
+    dockerfile-language-server-nodejs \
+    @usebruno/cli \
+    httpyac
+
+echo "Linking dotfiles."
+ln -s -f "${CWD}/emacs.el"   "${HOME}/.emacs"
+ln -s -f "${CWD}/.gitconfig" "${HOME}/.gitconfig"
+
+echo "Setup complete!"
