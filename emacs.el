@@ -203,6 +203,10 @@
 
 (setq sql-product 'postgres)
 
+;; turn on emacs mode in .dir-locals.el
+(add-to-list 'auto-mode-alist
+	     '("\\.dir-locals\\(?:-2\\)?\\.el\\'" . emacs-lisp-mode))
+
 ;;; emacs.el ends here
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
