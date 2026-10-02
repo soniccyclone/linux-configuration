@@ -187,7 +187,8 @@
 
 (use-package flymake-kondor
   :ensure t
-  :hook (clojure-mode . flymake-kondor-setup))
+  :hook ((clojure-mode . flymake-kondor-setup)
+         (clojure-mode . flymake-mode)))
 
 (use-package apheleia
   :ensure t
