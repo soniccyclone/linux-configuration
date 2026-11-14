@@ -17,6 +17,9 @@
 ;;; Then C-h n to keep paging
 ;;; Read emacs source code:
 ;;; M-x find-library <guess at source file name>
+;;; C-x + is balance windows.
+;;; So pressing C-x 3 twice followed by that will setup my windows how I want.
+;;; Don't need projectile cause C-x p f is built in project-find-file.
 
 ;;; Code:
 
